@@ -1,5 +1,5 @@
 // =====================================================================
-// SAVVYGROW AI - SUPABASE INTEGRATION CLIENT LAYER
+// POSTRICK AI - SUPABASE INTEGRATION CLIENT LAYER
 // File: /lib/supabaseClient.ts
 // =====================================================================
 

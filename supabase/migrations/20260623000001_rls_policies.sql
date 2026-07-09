@@ -1,5 +1,5 @@
 -- =====================================================================
--- SAVVYGROW AI - ROW LEVEL SECURITY (RLS) & TENANT ISOLATION POLICIES
+-- POSTRICK AI - ROW LEVEL SECURITY (RLS) & TENANT ISOLATION POLICIES
 -- Migration: 20260623000001_rls_policies.sql
 -- Description: Establishes column-level, row-level, and cross-workspace access locks
 -- =====================================================================

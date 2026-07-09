@@ -18,48 +18,17 @@ import {
 import confetti from "canvas-confetti";
 import AiCaptionAssistant from "./ai-caption-assistant";
 import AiCreativeKit from "./ai-creative-kit";
-import TrendWaveAnalytics from "./trendwave-analytics";
-import TrendWaveAccounts from "./trendwave-accounts";
-import TrendWaveSettings from "./trendwave-settings";
+import PostrickAnalytics from "./postrick-analytics";
+import PostrickAccounts from "./postrick-accounts";
+import PostrickSettings from "./postrick-settings";
+import OnboardingWizard from "./onboarding-wizard";
+
+import { Youtube, Facebook, Instagram, Linkedin, PostrickLogo } from "./icons";
+export { Youtube, Facebook, Instagram, Linkedin };
 
 interface DashboardPageProps {
   onExitApp: () => void;
   isDarkMode: boolean;
-}
-
-// Custom SVGs for Social Platforms
-export function Youtube({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M23.498 6.163a3.003 3.003 0 0 0-2.11-2.11C19.517 3.545 12 3.545 12 3.545s-7.517 0-9.388.508a3.003 3.003 0 0 0-2.11 2.11C0 8.033 0 12 0 12s0 3.967.502 5.837a3.003 3.003 0 0 0 2.11 2.11c1.871.508 9.388.508 9.388.508s7.517 0 9.388-.508a3.003 3.003 0 0 0 2.11-2.11C24 15.967 24 12 24 12s0-3.967-.502-5.837zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
-    </svg>
-  );
-}
-
-export function Facebook({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-    </svg>
-  );
-}
-
-export function Instagram({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-      <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
-      <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
-      <line x1="17.5" y1="6.5" x2="17.51" y2="6.5"></line>
-    </svg>
-  );
-}
-
-export function Linkedin({ className }: { className?: string }) {
-  return (
-    <svg className={className} viewBox="0 0 24 24" fill="currentColor">
-      <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.225 0h.003z"/>
-    </svg>
-  );
 }
 
 function PinterestIcon({ className }: { className?: string }) {
@@ -99,7 +68,7 @@ const PLATFORM_CHARACTER_LIMITS: Record<string, { label: string; max: number }> 
 };
 
 const SUGGESTED_TRENDING_HASHTAGS = [
-  "#Sustainability", "#TrendWave", "#ConsciousTech", "#ModernDesign", 
+  "#Sustainability", "#Postrick", "#ConsciousTech", "#ModernDesign", 
   "#CircularAesthetics", "#EcoFriendly", "#ZeroWaste", "#MinimalLiving"
 ];
 
@@ -154,6 +123,84 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
   const timelineScrollContainerRef = useRef<HTMLDivElement>(null);
   const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
   const [isOnboardingSimulator, setIsOnboardingSimulator] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
+  const dragCounter = useRef(0);
+
+  useEffect(() => {
+    const handleDragEnter = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes("Files")) {
+        dragCounter.current++;
+        setIsDraggingFile(true);
+      }
+    };
+
+    const handleDragLeave = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.dataTransfer && e.dataTransfer.types && Array.from(e.dataTransfer.types).includes("Files")) {
+        dragCounter.current--;
+        if (dragCounter.current <= 0) {
+          dragCounter.current = 0;
+          setIsDraggingFile(false);
+        }
+      }
+    };
+
+    const handleDragOver = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+    };
+
+    const handleDrop = (e: DragEvent) => {
+      e.preventDefault();
+      e.stopPropagation();
+      dragCounter.current = 0;
+      setIsDraggingFile(false);
+
+      if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+        const filesArr = Array.from(e.dataTransfer.files);
+        const mediaFiles = filesArr.filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
+        if (mediaFiles.length > 0) {
+          const formatted = mediaFiles.map((f, i) => ({
+            id: `custom-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+            url: URL.createObjectURL(f),
+            type: f.type.startsWith("video") ? ("video" as const) : ("image" as const),
+            name: f.name,
+            cropFits: ["instagram", "linkedin", "facebook", "youtube", "tiktok"],
+          }));
+          setUploadedMedia(prev => [...prev, ...formatted]);
+          setSelectedMediaId(formatted[0].id);
+          setActiveTab("composer");
+          confetti({ particleCount: 50, spread: 45 });
+        }
+      }
+    };
+
+    window.addEventListener("dragenter", handleDragEnter);
+    window.addEventListener("dragleave", handleDragLeave);
+    window.addEventListener("dragover", handleDragOver);
+    window.addEventListener("drop", handleDrop);
+
+    return () => {
+      window.removeEventListener("dragenter", handleDragEnter);
+      window.removeEventListener("dragleave", handleDragLeave);
+      window.removeEventListener("dragover", handleDragOver);
+      window.removeEventListener("drop", handleDrop);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const completed = localStorage.getItem("postrick_onboarding_completed");
+      if (completed !== "true") {
+        setShowOnboarding(true);
+      }
+    }
+  }, []);
 
   // Notifications State
   const [showNotifications, setShowNotifications] = useState(false);
@@ -162,7 +209,8 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
   // Search Pallette State (Cmd+K)
   const [showCommandPalette, setShowCommandPalette] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentWorkspace, setCurrentWorkspace] = useState("Trend Wave Main Brand");
+  const [currentWorkspace, setCurrentWorkspace] = useState("Postrick Main Brand");
+  const [dashboardUserName, setDashboardUserName] = useState("Sabeeh");
 
   // Input states from previous version to keep functionality intact
   const [activePlatform, setActivePlatform] = useState<"youtube" | "facebook" | "instagram" | "tiktok" | "pinterest" | "linkedin">("instagram");
@@ -216,7 +264,22 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ caption: captionText, platform: activePreviewTab }),
       });
-      const data = await res.json();
+      
+      let data;
+      try {
+        const contentType = res.headers.get("content-type");
+        if (res.ok && contentType && contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          console.warn("Hashtag API returned non-JSON / error response:", text);
+          data = { hashtags: ["#viral", "#trending", "#socialmedia", "#growth", "#creators", "#marketing", "#community", "#brand"] };
+        }
+      } catch (parseErr) {
+        console.warn("Failed to parse hashtag API response as JSON:", parseErr);
+        data = { hashtags: ["#viral", "#trending", "#socialmedia", "#growth", "#creators", "#marketing", "#community", "#brand"] };
+      }
+
       if (data.hashtags && data.hashtags.length > 0) {
         setSuggestedHashtags(data.hashtags);
       }
@@ -229,6 +292,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
 
   useEffect(() => {
     fetchAIHashtags(platformCaption);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getHashtagsFromCaption = (caption: string): string[] => {
@@ -319,13 +383,13 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
   const [isGeneratingImage, setIsGeneratingImage] = useState(false);
 
   // Bind accounts state
-  const [connectedChannels, setConnectedChannels] = useState({
-    youtube: true,
-    facebook: true,
-    instagram: true,
+  const [connectedChannels, setConnectedChannels] = useState<Record<string, boolean>>({
+    youtube: false,
+    facebook: false,
+    instagram: false,
     tiktok: false,
     pinterest: false,
-    linkedin: true
+    linkedin: false
   });
 
   // 📅 Weekly Content Calendar Rich States
@@ -339,6 +403,12 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
   const [selectedCalendarPostId, setSelectedCalendarPostId] = useState<string | null>(null);
   const [bulkSelectedIds, setBulkSelectedIds] = useState<string[]>([]);
   const [calendarToast, setCalendarToast] = useState<{ message: string; originalSlot: any } | null>(null);
+  const handleUndo = () => {
+    if (!calendarToast || !calendarToast.originalSlot) return;
+    const { id, day, hour } = calendarToast.originalSlot;
+    setScheduledSlots(prev => prev.map(p => p.id === id ? { ...p, day, hour } : p));
+    setCalendarToast(null);
+  };
   const [selectedScheduleDate, setSelectedScheduleDate] = useState<number>(23);
   const [selectedScheduleMonth, setSelectedScheduleMonth] = useState<number>(5); // June
   const [selectedScheduleYear, setSelectedScheduleYear] = useState<number>(2026);
@@ -351,32 +421,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
     text: string;
     platform: string;
     mediaUrl: string;
-  }>>([
-    {
-      id: "draft-1",
-      text: "Companion planting cheatsheet for maximizing organic crop yield in standard family plots! 🌿🍅 #EcoHome",
-      platform: "instagram",
-      mediaUrl: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=400&h=300&q=80"
-    },
-    {
-      id: "draft-2",
-      text: "Why vertical automated workspace retrofits are boosting indoor productivity metrics. Blueprint inside.",
-      platform: "linkedin",
-      mediaUrl: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=400&h=300&q=80"
-    },
-    {
-      id: "draft-3",
-      text: "Drip line irrigation installation made simple! Zero moisture waste & automatic timers. 💦🌱",
-      platform: "tiktok",
-      mediaUrl: "https://images.unsplash.com/photo-1592417817098-8f3d6eb19675?auto=format&fit=crop&w=400&h=300&q=80"
-    },
-    {
-      id: "draft-4",
-      text: "Unveiling our DIY micro-greenhouse greenhouse frame layout for small gardens. Let's build! 🛠️🏡",
-      platform: "youtube",
-      mediaUrl: "https://images.unsplash.com/photo-1585320806297-9794b3e4eeae?auto=format&fit=crop&w=400&h=300&q=80"
-    }
-  ]);
+  }>>([]);
   
   // Quick Post modal fields
   const [isQuickPostOpen, setIsQuickPostOpen] = useState(false);
@@ -410,6 +455,188 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
   const [newSlotAttachmentName, setNewSlotAttachmentName] = useState("");
   const [newSlotDate, setNewSlotDate] = useState("2026-06-22");
 
+  // Secure User Auth State Indicators
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [profile, setProfile] = useState<any>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [authTab, setAuthTab] = useState<"login" | "register">("login");
+  const [authForm, setAuthForm] = useState({ email: "", password: "", fullName: "" });
+  const [authLoading, setAuthLoading] = useState(false);
+  const [authError, setAuthError] = useState("");
+
+  const fetchSocialAccounts = async (workspaceId: string) => {
+    try {
+      const res = await fetch(`/api/social-accounts?workspaceId=${workspaceId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.accounts) {
+          const channelsMap: Record<string, boolean> = {
+            youtube: false,
+            facebook: false,
+            instagram: false,
+            tiktok: false,
+            pinterest: false,
+            linkedin: false
+          };
+          data.accounts.forEach((acct: any) => {
+            if (acct.platform in channelsMap) {
+              channelsMap[acct.platform] = true;
+            }
+          });
+          setConnectedChannels(channelsMap);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to load social accounts in dashboard:", err);
+    }
+  };
+
+  const checkAuthSession = async () => {
+    try {
+      const res = await fetch("/api/auth");
+      if (res.ok) {
+        const data = await res.json();
+        if (data.authenticated && data.user) {
+          setIsAuthenticated(true);
+          setUser(data.user);
+          setProfile(data.profile);
+          const wName = data.profile?.workspaces?.[0]?.name || "My Workspace";
+          setCurrentWorkspace(wName);
+          
+          const workspaceId = data.profile?.current_workspace_id || data.profile?.workspaces?.[0]?.id;
+          if (workspaceId) {
+            fetchUserCampaigns(workspaceId);
+            fetchSocialAccounts(workspaceId);
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Session verification failed:", err);
+    }
+  };
+
+  useEffect(() => {
+    checkAuthSession();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const fetchUserCampaigns = async (workspaceId: string) => {
+    try {
+      const res = await fetch(`/api/posts?workspaceId=${workspaceId}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data.posts) {
+          const drafts: any[] = [];
+          const scheduled: any[] = [];
+          
+          data.posts.forEach((p: any) => {
+            const mediaUrl = p.post_media?.[0]?.file_url || "";
+            if (p.status === "draft") {
+              drafts.push({
+                id: p.id,
+                text: p.content,
+                platform: p.target_platforms?.[0] || "instagram",
+                mediaUrl
+              });
+            } else {
+              const scheduledAt = p.scheduled_posts?.[0]?.scheduled_at || p.created_at;
+              const dateObj = new Date(scheduledAt);
+              const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+              const dayName = daysOfWeek[dateObj.getDay()];
+              const hourStr = `${String(dateObj.getHours()).padStart(2, "0")}:${String(dateObj.getMinutes()).padStart(2, "0")}`;
+              const dateStr = dateObj.toISOString().substring(0, 10);
+              
+              scheduled.push({
+                id: p.id,
+                day: dayName,
+                hour: hourStr,
+                platform: p.target_platforms?.[0] || "instagram",
+                platforms: p.target_platforms || ["instagram"],
+                text: p.content,
+                mediaUrl,
+                status: p.status,
+                title: p.title || p.content.substring(0, 30),
+                startTime: hourStr,
+                endTime: `${String((dateObj.getHours() + 1) % 24).padStart(2, "0")}:${String(dateObj.getMinutes()).padStart(2, "0")}`,
+                dayIndex: dateObj.getDay() === 0 ? 6 : dateObj.getDay() - 1,
+                accentColor: p.colorPreset || "#117644",
+                colorPreset: p.colorPreset || "pink",
+                subtitle: p.subtitle || "Campaign Queue Item",
+                attachmentName: p.attachmentName || "",
+                date: dateStr
+              });
+            }
+          });
+          
+          setDraftPool(drafts);
+          setScheduledSlots(scheduled);
+        }
+      }
+    } catch (err) {
+      console.error("Failed to retrieve user campaigns:", err);
+    }
+  };
+
+  const handleAuthSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setAuthLoading(true);
+    setAuthError("");
+    try {
+      const res = await fetch("/api/auth", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: authTab,
+          email: authForm.email,
+          password: authForm.password,
+          fullName: authForm.fullName
+        })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setIsAuthenticated(true);
+        setUser(data.user);
+        setProfile(data.profile);
+        setCurrentWorkspace(data.profile?.workspaces?.[0]?.name || "My Workspace");
+        setShowAuthModal(false);
+        setAuthForm({ email: "", password: "", fullName: "" });
+        confetti({ particleCount: 50, spread: 45 });
+        
+        const workspaceId = data.profile?.current_workspace_id || data.profile?.workspaces?.[0]?.id;
+        if (workspaceId) {
+          fetchUserCampaigns(workspaceId);
+        }
+      } else {
+        setAuthError(data.error || "Authentication processed with failure.");
+      }
+    } catch (err: any) {
+      setAuthError(err.message || "Network request failed.");
+    } finally {
+      setAuthLoading(false);
+    }
+  };
+
+  const handleDeletePost = async (id: string) => {
+    if (isAuthenticated && user) {
+      try {
+        const response = await fetch(`/api/posts?id=${id}&userId=${user.id}`, {
+          method: "DELETE"
+        });
+        if (response.ok) {
+          setScheduledSlots(prev => prev.filter(s => s.id !== id));
+          setDraftPool(prev => prev.filter(d => d.id !== id));
+          confetti({ particleCount: 10, angle: 90 });
+        }
+      } catch (err) {
+        console.error("Delete post error:", err);
+      }
+    } else {
+      setScheduledSlots(prev => prev.filter(s => s.id !== id));
+      setDraftPool(prev => prev.filter(d => d.id !== id));
+    }
+  };
+
   const [scheduledSlots, setScheduledSlots] = useState<Array<{
     id: string;
     day: string;
@@ -428,302 +655,26 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
     tagBadge?: string;
     description?: string;
     // Custom requested specifications
-    title: string;
-    startTime: string;
-    endTime: string;
-    dayIndex: number;
-    accentColor: string;
+    title?: string;
+    startTime?: string;
+    endTime?: string;
+    dayIndex?: number;
+    accentColor?: string;
     colorPreset?: "pink" | "blue" | "yellow" | "purple" | "gray";
     date?: string;
-  }>>([
-    {
-      id: "slot-mon-1",
-      day: "Mon",
-      hour: "07:00",
-      platform: "instagram",
-      platforms: ["instagram"],
-      text: "Emergency Brand Update",
-      title: "Emergency Brand Update",
-      startTime: "07:00",
-      endTime: "07:30",
-      dayIndex: 0,
-      accentColor: "#E1528A",
-      colorPreset: "pink",
-      subtitle: "West server cluster, Node 312",
-      status: "scheduled",
-      attachmentName: "soil_report.pdf",
-      date: "2026-06-22"
-    },
-    {
-      id: "slot-mon-2",
-      day: "Mon",
-      hour: "07:30",
-      platform: "linkedin",
-      platforms: ["linkedin"],
-      text: "Diagnostic campaign test",
-      title: "Diagnostic campaign test",
-      startTime: "07:30",
-      endTime: "07:55",
-      dayIndex: 0,
-      accentColor: "#57A1E3",
-      colorPreset: "blue",
-      subtitle: "Organic audience metrics",
-      status: "scheduled",
-      date: "2026-06-22"
-    },
-    {
-      id: "slot-mon-3",
-      day: "Mon",
-      hour: "08:00",
-      platform: "tiktok",
-      platforms: ["tiktok", "facebook"],
-      text: "Team scheduling & metrics planning",
-      title: "Team scheduling & metrics planning",
-      startTime: "08:00",
-      endTime: "09:00",
-      dayIndex: 0,
-      accentColor: "#F5C242",
-      colorPreset: "yellow",
-      subtitle: "East Greenhouse, Room 200",
-      status: "scheduled",
-      attachmentName: "agenda_v1.pdf",
-      date: "2026-06-22"
-    },
-    {
-      id: "slot-mon-4",
-      day: "Mon",
-      hour: "09:00",
-      platform: "instagram",
-      platforms: ["instagram"],
-      text: "Emergency cross-posts rewrite",
-      title: "Emergency cross-posts rewrite",
-      startTime: "09:00",
-      endTime: "09:30",
-      dayIndex: 0,
-      accentColor: "#E1528A",
-      colorPreset: "pink",
-      subtitle: "West glasshouse, Bay 4",
-      status: "scheduled",
-      date: "2026-06-22"
-    },
-    {
-      id: "slot-tue-1",
-      day: "Tue",
-      hour: "07:00",
-      platform: "instagram",
-      platforms: ["instagram"],
-      text: "Online subscriber live Q&A",
-      title: "Online subscriber live Q&A",
-      startTime: "07:00",
-      endTime: "08:00",
-      dayIndex: 1,
-      accentColor: "#A855F7",
-      colorPreset: "purple",
-      subtitle: "Streaming connection active",
-      status: "scheduled",
-      attachmentName: "product_slides.pdf",
-      date: "2026-06-23"
-    },
-    {
-      id: "slot-tue-2",
-      day: "Tue",
-      hour: "08:00",
-      platform: "linkedin",
-      platforms: ["linkedin"],
-      text: "Diagnostic speed test live",
-      title: "Diagnostic speed test live",
-      startTime: "08:00",
-      endTime: "08:30",
-      dayIndex: 1,
-      accentColor: "#57A1E3",
-      colorPreset: "blue",
-      subtitle: "API telemetry stats",
-      status: "scheduled",
-      date: "2026-06-23"
-    },
-    {
-      id: "slot-wed-1",
-      day: "Wed",
-      hour: "08:00",
-      platform: "instagram",
-      platforms: ["instagram"],
-      text: "Follow-up foliage design campaign",
-      title: "Follow-up foliage design campaign",
-      startTime: "08:00",
-      endTime: "08:30",
-      dayIndex: 2,
-      accentColor: "#E1528A",
-      colorPreset: "pink",
-      subtitle: "West glasshouse, Bay 4",
-      status: "scheduled",
-      date: "2026-06-24"
-    },
-    {
-      id: "slot-wed-2",
-      day: "Wed",
-      hour: "08:30",
-      platform: "linkedin",
-      platforms: ["linkedin", "tiktok"],
-      text: "Brand Interns sync review",
-      title: "Brand Interns sync review",
-      startTime: "08:30",
-      endTime: "09:30",
-      dayIndex: 2,
-      accentColor: "#57A1E3",
-      colorPreset: "blue",
-      subtitle: "Conference room 404",
-      status: "scheduled",
-      date: "2026-06-24"
-    },
-    {
-      id: "slot-thu-1",
-      day: "Thu",
-      hour: "07:00",
-      platform: "youtube",
-      platforms: ["youtube"],
-      text: "Online live podcast: Organic Growth",
-      title: "Online live podcast: Organic Growth",
-      startTime: "07:00",
-      endTime: "08:00",
-      dayIndex: 3,
-      accentColor: "#A855F7",
-      colorPreset: "purple",
-      subtitle: "Main channel broadcast feed",
-      status: "publishing",
-      date: "2026-06-25"
-    },
-    {
-      id: "slot-thu-2",
-      day: "Thu",
-      hour: "08:00",
-      platform: "linkedin",
-      platforms: ["linkedin"],
-      text: "Advanced Bio-organic Content strategy",
-      title: "Advanced Bio-organic Content strategy",
-      startTime: "08:00",
-      endTime: "09:30",
-      dayIndex: 3,
-      accentColor: "#042F1A",
-      colorPreset: "gray",
-      subtitle: "Primary Core",
-      tagBadge: "Primary Care",
-      isLargeCard: true,
-      description: "What tools can you leverage to help maximize soil pH levels, automate system nutrients, and boost organic content metrics by up to 140%? Read our ultimate blueprint inside.",
-      attachmentName: "biomass_blueprint_v3.pdf",
-      mediaUrl: "https://images.unsplash.com/photo-1466692476868-aef1dfb1e735?auto=format&fit=crop&w=400&h=300&q=80",
-      status: "scheduled",
-      date: "2026-06-25"
-    },
-    {
-      id: "slot-thu-3",
-      day: "Thu",
-      hour: "09:30",
-      platform: "instagram",
-      platforms: ["instagram"],
-      text: "Emergency copywriting backup sync",
-      title: "Emergency copywriting backup sync",
-      startTime: "09:30",
-      endTime: "10:00",
-      dayIndex: 3,
-      accentColor: "#E1528A",
-      colorPreset: "pink",
-      subtitle: "West glasshouse, Bay 4",
-      status: "scheduled",
-      date: "2026-06-25"
-    },
-    {
-      id: "slot-fri-1",
-      day: "Fri",
-      hour: "07:00",
-      platform: "tiktok",
-      platforms: ["tiktok"],
-      text: "Growth Team results review",
-      title: "Growth Team results review",
-      startTime: "07:00",
-      endTime: "08:00",
-      dayIndex: 4,
-      accentColor: "#F5C242",
-      colorPreset: "yellow",
-      subtitle: "East Greenhouse, Room 200",
-      status: "scheduled",
-      attachmentName: "results_sheet.xlsx",
-      date: "2026-06-26"
-    },
-    {
-      id: "slot-fri-2",
-      day: "Fri",
-      hour: "08:00",
-      platform: "instagram",
-      platforms: ["instagram"],
-      text: "Emergency QA brand layout sync",
-      title: "Emergency QA brand layout sync",
-      startTime: "08:00",
-      endTime: "08:30",
-      dayIndex: 4,
-      accentColor: "#E1528A",
-      colorPreset: "pink",
-      subtitle: "West glasshouse, Bay 4",
-      status: "scheduled",
-      date: "2026-06-26"
-    },
-    {
-      id: "slot-fri-3",
-      day: "Fri",
-      hour: "08:30",
-      platform: "linkedin",
-      platforms: ["linkedin"],
-      text: "Diagnostic platform health-check",
-      title: "Diagnostic platform health-check",
-      startTime: "08:30",
-      endTime: "09:00",
-      dayIndex: 4,
-      accentColor: "#57A1E3",
-      colorPreset: "blue",
-      subtitle: "Soil & moisture data check",
-      status: "scheduled",
-      date: "2026-06-26"
-    },
-    {
-      id: "slot-fri-4",
-      day: "Fri",
-      hour: "09:00",
-      platform: "pinterest",
-      platforms: ["pinterest"],
-      text: "Interns onboarding presentation",
-      title: "Interns onboarding presentation",
-      startTime: "09:00",
-      endTime: "09:30",
-      dayIndex: 4,
-      accentColor: "#57A1E3",
-      colorPreset: "blue",
-      subtitle: "Conference room 404",
-      status: "scheduled",
-      date: "2026-06-26"
-    },
-    {
-      id: "slot-sat-1",
-      day: "Sat",
-      hour: "07:30",
-      platform: "instagram",
-      platforms: ["instagram"],
-      text: "Online live brand Q&A stream",
-      title: "Online live brand Q&A stream",
-      startTime: "07:30",
-      endTime: "08:30",
-      dayIndex: 5,
-      accentColor: "#A855F7",
-      colorPreset: "purple",
-      subtitle: "Streaming connection active",
-      status: "scheduled",
-      date: "2026-06-27"
-    }
-  ]);
+  }>>([]);
 
-  const handleAddScheduleSlot = (e?: React.FormEvent) => {
+  const handleAddScheduleSlot = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
     if (!newSlotText.trim()) return;
+    
     const idxs: Record<string, number> = { Mon: 0, Tue: 1, Wed: 2, Thu: 3, Fri: 4, Sat: 5, Sun: 6 };
-    const newSlot = {
+    const dayIdx = idxs[newSlotDay] ?? 0;
+    
+    // Build real calendar date object
+    const scheduledDateTime = new Date(`${newSlotDate}T${newSlotHour}:00`).toISOString();
+
+    const newSlot: any = {
       id: "slot-" + Date.now().toString(),
       day: newSlotDay,
       hour: newSlotHour,
@@ -739,14 +690,48 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
         const [h, m] = newSlotHour.split(":");
         return `${String(parseInt(h) + 1).padStart(2, "0")}:${m || "00"}`;
       })(),
-      dayIndex: idxs[newSlotDay] ?? 0,
+      dayIndex: dayIdx,
       accentColor: newSlotColorPreset === "pink" ? "#E1528A" : newSlotColorPreset === "blue" ? "#57A1E3" : newSlotColorPreset === "yellow" ? "#F5C242" : newSlotColorPreset === "purple" ? "#A855F7" : "#042F1A",
       colorPreset: newSlotColorPreset,
       subtitle: newSlotSubtitle || "Primary Core",
       attachmentName: newSlotAttachmentName || "",
       date: newSlotDate
     };
-    setScheduledSlots(prev => [...prev, newSlot]);
+
+    if (isAuthenticated && profile && user) {
+      try {
+        const workspaceId = profile.current_workspace_id || profile.workspaces?.[0]?.id;
+        const response = await fetch("/api/posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            workspaceId,
+            userId: user.id,
+            content: newSlotText,
+            title: newSlotText.substring(0, 30),
+            status: "scheduled",
+            targetPlatforms: newSlotPlatforms.length > 0 ? newSlotPlatforms : ["instagram"],
+            scheduledTime: scheduledDateTime,
+            mediaUrls: newSlotImage ? [newSlotImage] : [],
+            attachmentName: newSlotAttachmentName,
+            colorPreset: newSlotColorPreset,
+            subtitle: newSlotSubtitle || "Primary Core"
+          })
+        });
+        if (response.ok) {
+          const result = await response.json();
+          const dbPost = result.post;
+          newSlot.id = dbPost.id;
+          setScheduledSlots(prev => [...prev, newSlot]);
+          confetti({ particleCount: 30, spread: 40 });
+        }
+      } catch (err) {
+        console.error("Save post error:", err);
+      }
+    } else {
+      setScheduledSlots(prev => [...prev, newSlot]);
+    }
+
     setNewSlotText("");
     setNewSlotSubtitle("");
     setNewSlotAttachmentName("");
@@ -1073,7 +1058,22 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt, platform: activePlatform })
       });
-      const data = await res.json();
+      
+      let data;
+      try {
+        const contentType = res.headers.get("content-type");
+        if (res.ok && contentType && contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          console.warn("Caption generation API returned non-JSON / error:", text);
+          data = { caption: `🚀 ${prompt}\n\nOur latest visual builder streamlines all your publishing workflows on one simple unified social dashboard. Let us know your thoughts!\n\n#SmartPosting #EnterpriseSaaS #Automation` };
+        }
+      } catch (parseErr) {
+        console.warn("Failed to parse caption API response as JSON:", parseErr);
+        data = { caption: `🚀 ${prompt}\n\nOur latest visual builder streamlines all your publishing workflows on one simple unified social dashboard. Let us know your thoughts!\n\n#SmartPosting #EnterpriseSaaS #Automation` };
+      }
+
       if (data.caption) {
         setPlatformCaption(data.caption);
         confetti({ particleCount: 70, spread: 50, origin: { y: 0.8 } });
@@ -1096,7 +1096,22 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: refinedPrompt, platform: activePreviewTab })
       });
-      const data = await res.json();
+      
+      let data;
+      try {
+        const contentType = res.headers.get("content-type");
+        if (res.ok && contentType && contentType.includes("application/json")) {
+          data = await res.json();
+        } else {
+          const text = await res.text();
+          console.warn("AI Assist API returned non-JSON / error:", text);
+          data = { caption: `🚀 Refined Caption\n\nOptimized with ${aiTone} tone for ${activePreviewTab}. Guidelines: ${aiGuidelines || 'none'}.\n\n#SmartPosting #CreatorSuite` };
+        }
+      } catch (parseErr) {
+        console.warn("Failed to parse AI Assist API response as JSON:", parseErr);
+        data = { caption: `🚀 Refined Caption\n\nOptimized with ${aiTone} tone for ${activePreviewTab}. Guidelines: ${aiGuidelines || 'none'}.\n\n#SmartPosting #CreatorSuite` };
+      }
+
       if (data.caption) {
         handleUseCaption(data.caption);
         confetti({ particleCount: 60, spread: 45 });
@@ -1118,7 +1133,22 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: imagePrompt }),
       });
-      const data = await response.json();
+      
+      let data;
+      try {
+        const contentType = response.headers.get("content-type");
+        if (response.ok && contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          console.warn("Image API returned non-JSON / error:", text);
+          data = { image: `https://picsum.photos/seed/${encodeURIComponent(imagePrompt)}/800/600` };
+        }
+      } catch (parseErr) {
+        console.warn("Failed to parse Image API response as JSON:", parseErr);
+        data = { image: `https://picsum.photos/seed/${encodeURIComponent(imagePrompt)}/800/600` };
+      }
+
       if (data && data.image) {
         setGeneratedImage(data.image);
         confetti({ particleCount: 50, spread: 40, colors: ["#10b981", "#3b82f6"] });
@@ -1526,7 +1556,6 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
 
   // List of Nav Items
   const navItems = [
-    { id: "home", label: "Home", icon: <Home className="w-4 h-4" /> },
     { id: "dashboard", label: "Dashboard", icon: <Layout className="w-4 h-4" /> },
     { id: "publish", label: "Publish", icon: <Send className="w-4 h-4" /> },
     { id: "calendar", label: "Calendar", icon: <Calendar className="w-4 h-4" /> },
@@ -1548,6 +1577,62 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
   return (
     <div className="min-h-screen flex flex-col md:flex-row bg-[#FAF6EE] text-[#042F1A] font-sans antialiased selection:bg-[#C5E729]/30">
       
+      {isDraggingFile && (
+        <div className="fixed inset-0 z-[99999] bg-[#042F1A]/85 backdrop-blur-md flex flex-col items-center justify-center p-8 text-center pointer-events-none transition-all duration-300">
+          <div className="max-w-md bg-[#FAF6EE] p-10 rounded-[32px] border-4 border-dashed border-[#117644] shadow-2xl flex flex-col items-center gap-6 animate-bounce">
+            <div className="w-20 h-20 rounded-full bg-[#117644]/10 text-[#117644] flex items-center justify-center">
+              <Upload className="w-10 h-10 animate-pulse" />
+            </div>
+            <div>
+              <h2 className="font-serif text-2xl font-black text-[#042F1A] tracking-tight">Drop files to upload</h2>
+              <p className="text-xs text-stone-500 mt-2 font-medium">Release multiple images or videos anywhere on the window to load them directly into your Postrick Composer.</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showOnboarding && (
+        <OnboardingWizard
+          isDarkMode={isDarkMode}
+          onSkip={() => {
+            setShowOnboarding(false);
+          }}
+          onComplete={(data) => {
+            setShowOnboarding(false);
+            if (data.workspaceName) {
+              setCurrentWorkspace(data.workspaceName);
+            }
+            if (data.userName) {
+              setDashboardUserName(data.userName);
+            }
+            if (data.connectedChannels) {
+              setConnectedChannels(data.connectedChannels);
+            }
+            if (data.firstPostScheduled && data.postData) {
+              const newPost = {
+                id: `onb-post-${Date.now()}`,
+                day: "Tue",
+                hour: "12:00",
+                platform: data.postData.platform,
+                platforms: data.postData.platforms,
+                text: data.postData.text,
+                mediaUrl: data.postData.mediaUrl,
+                status: "scheduled" as const,
+                likes: 0,
+                comments: 0,
+                shares: 0,
+              };
+              setScheduledSlots(prev => [newPost, ...prev]);
+            }
+            confetti({
+              particleCount: 150,
+              spread: 100,
+              origin: { y: 0.6 }
+            });
+          }}
+        />
+      )}
+      
       {/* 1. COLLAPSIBLE LEFT SIDEBAR */}
       <aside 
         id="sidebar"
@@ -1559,12 +1644,10 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
           {/* Logo Brand Header */}
           <div className="p-5 flex items-center justify-between border-b border-[#FAF6EE]">
             <div className="flex items-center gap-2.5 overflow-hidden">
-              <span className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-full font-serif font-black italic text-sm border bg-[#042F1A] text-[#FAF6EE] border-[#042F1A]">
-                T
-              </span>
+              <PostrickLogo className="w-8 h-8 flex-shrink-0" color="#1E3216" bgStrokeColor="#FAF6EE" />
               {!isSidebarCollapsed && (
                 <span className="font-serif font-black text-sm tracking-tight text-[#042F1A] animate-fadeIn whitespace-nowrap">
-                  Trend Wave<span className="text-[10px] font-sans align-super">®</span>
+                  Postrick<span className="text-[10px] font-sans align-super">®</span>
                 </span>
               )}
             </div>
@@ -1747,7 +1830,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                 <ChevronDown className="w-3 h-3 opacity-60" />
               </button>
               <div className="absolute right-0 top-full mt-1.5 w-44 bg-white border border-[#eae3d2] rounded-xl shadow-lg opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 z-20 p-1">
-                {["Trend Wave Main Brand", "Personal Creator Account", "Brand Beta Testing"].map((ws) => (
+                {["Postrick Main Brand", "Personal Creator Account", "Brand Beta Testing"].map((ws) => (
                   <button
                     key={ws}
                     onClick={() => { setCurrentWorkspace(ws); confetti({ particleCount: 15 }); }}
@@ -1803,13 +1886,35 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
             </div>
 
             {/* Profile widget bar info */}
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-full bg-[#117644]/10 border border-[#117644]/20 flex items-center justify-center font-bold text-xs text-[#117644]">
-                ks
+            <div className="flex items-center gap-2.5 cursor-pointer hover:opacity-90 transition-opacity" onClick={() => { if (!isAuthenticated) { setShowAuthModal(true); setAuthTab("login"); } }}>
+              <div className="w-8 h-8 rounded-full bg-[#117644]/10 border border-[#117644]/25 flex items-center justify-center font-bold text-xs text-[#117644] uppercase shrink-0">
+                {isAuthenticated ? (profile?.full_name?.substring(0, 2) || user?.email?.substring(0, 2) || "U") : "G"}
               </div>
-              <span className="hidden xl:inline text-[11px] font-bold select-none text-[#042F1A]/70">
-                ksabih314@gmail.com
-              </span>
+              <div className="flex flex-col text-left min-w-0">
+                <span className="hidden xl:inline text-[11px] font-black select-none text-[#042F1A] leading-tight truncate">
+                  {isAuthenticated ? (profile?.full_name || user?.email) : "Guest Sandbox"}
+                </span>
+                {!isAuthenticated ? (
+                  <span className="text-[9px] font-black text-[#117644] hover:underline uppercase tracking-wider block">Click to Access</span>
+                ) : (
+                  <button 
+                    onClick={async (e) => {
+                      e.stopPropagation();
+                      await fetch("/api/auth", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "logout" }) });
+                      setIsAuthenticated(false);
+                      setUser(null);
+                      setProfile(null);
+                      setScheduledSlots([]);
+                      setDraftPool([]);
+                      setCurrentWorkspace("My Workspace");
+                      confetti({ particleCount: 15 });
+                    }}
+                    className="text-[9px] text-red-600 hover:underline text-left font-black uppercase tracking-wider block mt-0.5"
+                  >
+                    Logout
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Primary Command Post trigger button */}
@@ -1839,20 +1944,26 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
               >
                 
                 {/* SECTION 1 — Welcome header row */}
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 glass-card p-6 rounded-3xl shadow-2xs">
+                <motion.div 
+                  initial={{ opacity: 0, y: 15 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true, margin: "-40px" }}
+                  transition={{ duration: 0.5 }}
+                  className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 glass-card p-6 rounded-3xl shadow-2xs"
+                >
                   <div className="space-y-1">
                     <div className="flex items-center gap-3 flex-wrap">
-                      <h1 className="font-serif text-2xl font-black text-[#042F1A]">
-                        Good morning, Sabeeh 👋
+                      <h1 className="font-serif text-2xl font-bold text-[#042F1A] tracking-tight">
+                        Good morning, {dashboardUserName} 👋
                       </h1>
                       
                       {/* Interactive Onboarding State Switch Pill */}
-                      <div className="inline-flex rounded-full bg-[#FAF5EB] p-0.5 border border-[#eae3d2] select-none text-[9px] font-mono tracking-wider font-extrabold uppercase">
+                      <div className="inline-flex rounded-full bg-[#FAF5EB] p-0.5 border border-[#eae3d2] select-none text-[9px] font-mono tracking-wider font-bold uppercase">
                         <button
                           onClick={() => setIsOnboardingSimulator(false)}
                           className={`px-3 py-1 rounded-full transition-all ${
                             !isOnboardingSimulator 
-                              ? "bg-white text-[#117644] shadow-xs font-black border border-[#eae3d2]/60" 
+                              ? "bg-white text-[#117644] shadow-xs font-bold border border-[#eae3d2]/60" 
                               : "text-neutral-500 hover:text-[#042F1A]"
                           }`}
                         >
@@ -1862,16 +1973,28 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                           onClick={() => setIsOnboardingSimulator(true)}
                           className={`px-3 py-1 rounded-full transition-all ${
                             isOnboardingSimulator 
-                              ? "bg-white text-rose-600 shadow-xs font-black border border-red-200" 
+                              ? "bg-white text-rose-600 shadow-xs font-bold border border-red-200" 
                               : "text-neutral-500 hover:text-black"
                           }`}
                         >
                           Onboarding Simulator (Empty)
                         </button>
+                        <button
+                          onClick={() => {
+                            if (typeof window !== "undefined") {
+                              localStorage.removeItem("postrick_onboarding_completed");
+                              localStorage.removeItem("postrick_onboarding_wizard_step");
+                            }
+                            setShowOnboarding(true);
+                          }}
+                          className="px-3 py-1 rounded-full transition-all text-neutral-500 hover:text-[#042F1A] flex items-center gap-1 font-extrabold"
+                        >
+                          <Sparkles className="w-2.5 h-2.5 text-[#117644]" /> Replay Onboarding
+                        </button>
                       </div>
                     </div>
-                    <p className="text-xs text-[#042F1A]/60 font-medium">
-                      Here is what is happening across your customized multi-posting social loop today: <span className="font-mono text-xs font-black ml-1">June 21, 2026</span>
+                    <p className="text-xs text-[#042F1A]/70 font-medium">
+                      Here is what is happening across your customized multi-posting social loop today: <span className="font-mono text-xs font-semibold ml-1">June 21, 2026</span>
                     </p>
                   </div>
 
@@ -1890,29 +2013,62 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                       <BarChart3 className="w-3 h-3 text-[#117644]" /> View Analytics
                     </button>
                   </div>
-                </div>
+                </motion.div>
 
                 {/* SECTION 2 — Stat cards row (4 cards with sparklines & Count-ups) */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
                   {[
-                    { title: "Scheduled This Week", val: 24, suffix: "", trend: "↑ 12% vs last week", positive: true, spark: sparkWeek, color: "#117644" },
-                    { title: "Published This Month", val: 142, suffix: " posts", trend: "↑ 18% vs last month", positive: true, spark: sparkMonth, color: "#3b82f6" },
-                    { title: "Avg. Engagement Rate", val: 5.8, suffix: "%", trend: "↑ 0.4% from average", positive: true, spark: sparkEngage, color: "#a855f7" },
-                    { title: "Connected Accounts", val: 4, suffix: " / 6", trend: "4 active channels", positive: true, spark: sparkAccounts, color: "#10b981" }
+                    { 
+                      title: "Scheduled This Week", 
+                      val: scheduledSlots.filter(s => s.status === "scheduled").length, 
+                      suffix: "", 
+                      trend: scheduledSlots.filter(s => s.status === "scheduled").length > 0 ? "Active schedule nodes" : "No scheduled posts", 
+                      positive: true, 
+                      spark: scheduledSlots.filter(s => s.status === "scheduled").length > 0 ? sparkWeek : [], 
+                      color: "#117644" 
+                    },
+                    { 
+                      title: "Published This Month", 
+                      val: scheduledSlots.filter(s => s.status === "published").length, 
+                      suffix: " posts", 
+                      trend: scheduledSlots.filter(s => s.status === "published").length > 0 ? "Actively publishing" : "No published posts yet", 
+                      positive: true, 
+                      spark: scheduledSlots.filter(s => s.status === "published").length > 0 ? sparkMonth : [], 
+                      color: "#3b82f6" 
+                    },
+                    { 
+                      title: "Avg. Engagement Rate", 
+                      val: Object.values(connectedChannels).some(Boolean) ? 5.8 : 0, 
+                      suffix: "%", 
+                      trend: Object.values(connectedChannels).some(Boolean) ? "↑ 0.4% from average" : "Binds required to track", 
+                      positive: true, 
+                      spark: Object.values(connectedChannels).some(Boolean) ? sparkEngage : [], 
+                      color: "#a855f7" 
+                    },
+                    { 
+                      title: "Connected Accounts", 
+                      val: Object.values(connectedChannels).filter(Boolean).length, 
+                      suffix: " / 6", 
+                      trend: `${Object.values(connectedChannels).filter(Boolean).length} active binds`, 
+                      positive: true, 
+                      spark: Object.values(connectedChannels).filter(Boolean).length > 0 ? sparkAccounts : [], 
+                      color: "#10b981" 
+                    }
                   ].map((stat, idx) => (
                     <motion.div
                       key={stat.title}
-                      initial={{ opacity: 0, y: 15 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: idx * 0.1 }}
+                      initial={{ opacity: 0, y: 20 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-40px" }}
+                      transition={{ duration: 0.5, delay: idx * 0.05 }}
                       className="glass-card glass-card-hover p-5 rounded-2xl flex flex-col justify-between"
                     >
-                      <div className="space-y-2">
+                      <div className="space-y-2.5">
                         <div className="flex items-center justify-between">
-                          <span className="font-mono text-[9px] uppercase font-black tracking-widest text-[#042F1A]/50">
+                          <span className="font-mono text-[9.5px] uppercase font-bold tracking-[0.12em] text-[#042F1A]/60">
                             {stat.title}
                           </span>
-                          <span className="p-1 rounded-full bg-neutral-50">
+                          <span className="p-1 rounded-full bg-neutral-50/80 border border-neutral-100">
                             {idx === 0 && <Calendar className="w-3.5 h-3.5 text-[#117644]" />}
                             {idx === 1 && <Send className="w-3.5 h-3.5 text-blue-500" />}
                             {idx === 2 && <Target className="w-3.5 h-3.5 text-purple-500" />}
@@ -1921,7 +2077,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                         </div>
                         
                         <div id={`stat-val-wrapper-${idx}`} className="flex items-baseline gap-1">
-                          <span className="font-serif text-2xl font-black text-[#042F1A]">
+                          <span className="font-serif text-2.5xl font-extrabold tracking-tight text-[#042F1A]">
                             <CountUp value={stat.val} suffix={stat.suffix} />
                           </span>
                         </div>
@@ -1929,25 +2085,29 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
 
                       {/* Sparkline & trend wrapper */}
                       <div className="mt-4 pt-3 border-t border-dashed border-[#FAF6EE] flex items-end justify-between gap-4">
-                        <span className="text-[10px] font-mono font-extrabold text-[#117644]">
+                        <span className="text-[10px] font-mono font-semibold text-[#117644]/90">
                           {stat.trend}
                         </span>
 
                         {/* Sparkline mini render in Recharts */}
-                        <div className="h-6 w-16 opacity-75">
-                          <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={stat.spark}>
-                              <Area 
-                                type="monotone" 
-                                dataKey="value" 
-                                stroke={stat.color} 
-                                fill={stat.color} 
-                                fillOpacity={0.15} 
-                                strokeWidth={1.5} 
-                                dot={false} 
-                              />
-                            </AreaChart>
-                          </ResponsiveContainer>
+                        <div className="h-6 w-16 opacity-75 flex items-center justify-end">
+                          {stat.spark && stat.spark.length > 0 ? (
+                            <ResponsiveContainer width="100%" height="100%">
+                              <AreaChart data={stat.spark}>
+                                <Area 
+                                  type="monotone" 
+                                  dataKey="value" 
+                                  stroke={stat.color} 
+                                  fill={stat.color} 
+                                  fillOpacity={0.15} 
+                                  strokeWidth={1.5} 
+                                  dot={false} 
+                                />
+                              </AreaChart>
+                            </ResponsiveContainer>
+                          ) : (
+                            <span className="text-[10px] font-mono text-neutral-300">--</span>
+                          )}
                         </div>
                       </div>
                     </motion.div>
@@ -1961,72 +2121,99 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                     <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                       
                       {/* LEFT (Wider ~60%) Upcoming Posts List */}
-                      <div className="lg:col-span-7 glass-card p-6 rounded-3xl flex flex-col justify-between shadow-2xs">
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 0.6 }}
+                        className="lg:col-span-7 glass-card p-6 rounded-3xl flex flex-col justify-between shadow-2xs"
+                      >
                         <div className="space-y-4">
                           <div className="flex items-center justify-between border-b border-[#FAF6EE] pb-3">
                             <div>
-                              <h3 className="font-serif text-base font-black text-[#042F1A] flex items-center gap-2">
+                              <h3 className="font-serif text-base font-bold text-[#042F1A] flex items-center gap-2 tracking-tight">
                                 <Clock className="w-4.5 h-4.5 text-[#117644]" /> Upcoming Posts Queue
                               </h3>
-                              <p className="text-[10.5px] opacity-60">High-probability dispatch queues registered this week</p>
+                              <p className="text-[11px] text-[#042F1A]/65 font-normal">High-probability dispatch queues registered this week</p>
                             </div>
-                            <span className="text-[9px] font-mono tracking-widest uppercase font-extrabold px-2.5 py-1 bg-emerald-50 text-[#117644] rounded-full">
-                              5 Queued Slots
+                            <span className="text-[9px] font-mono tracking-[0.1em] uppercase font-bold px-2.5 py-1 bg-emerald-50 border border-emerald-150 text-[#117644] rounded-full">
+                              {scheduledSlots.length} Queued Slots
                             </span>
                           </div>
 
                           {/* Dynamic staggered rows list */}
                           <div className="space-y-2.5 max-h-96 overflow-y-auto pr-1">
-                            {[
-                              { id: 1, title: "Summer Sustainable Devices Launch", text: "Minimizing material carbon balance has never been easier cleanly...", platform: ["instagram", "linkedin"], img: "https://images.unsplash.com/photo-1542751371-adc38448a05e?auto=format&fit=crop&w=150&h=100&q=80", status: "Scheduled", time: "Mon - 12:00 PM" },
-                              { id: 2, title: "Frictionless setup instructions livestream", text: "Join our creators active livestream showing 30% recycled plastics...", platform: ["youtube"], img: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=150&h=100&q=80", status: "Needs Review", time: "Wed - 14:00 PM" },
-                              { id: 3, title: "Isomorphic Design Aesthetics Grid", text: "Behind the scene mockup styles showing custom packaging...", platform: ["instagram", "facebook"], img: "https://images.unsplash.com/photo-1460925895917-afdab827c52f?auto=format&fit=crop&w=150&h=100&q=80", status: "Draft", time: "Fri - 18:00 PM" },
-                              { id: 4, title: "Sustainability Corporate Manifesto update", text: "Dynamic carbon balance indexes for professional organizations...", platform: ["linkedin"], img: "https://images.unsplash.com/photo-1531403009284-440f080d1e12?auto=format&fit=crop&w=150&h=100&q=80", status: "Scheduled", time: "Sat - 10:00 AM" }
-                            ].map((post, idx) => (
-                              <motion.div
-                                key={post.id}
-                                initial={{ opacity: 0, x: -10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                transition={{ delay: idx * 0.08 }}
-                                className="group p-3 rounded-xl border border-transparent hover:border-[#eae3d2] hover:bg-[#FAF6EE]/40 hover:-translate-y-0.5 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
-                              >
-                                <div className="flex items-center gap-3 min-w-0">
-                                  <img 
-                                    src={post.img} 
-                                    alt="Thumbnail preview" 
-                                    className="w-12 h-10 object-cover rounded-lg flex-shrink-0 bg-neutral-100 border border-neutral-100"
-                                    referrerPolicy="no-referrer"
-                                  />
-                                  <div className="min-w-0">
-                                    <h4 className="text-xs font-bold truncate text-[#042F1A]">{post.title}</h4>
-                                    <p className="text-[10px] text-neutral-400 truncate leading-relaxed">{post.text}</p>
-                                    
-                                    {/* Platform Badges */}
-                                    <div className="flex items-center gap-1.5 mt-1">
-                                      {post.platform.map(p => (
-                                        <span key={p} className="p-0.5 rounded bg-neutral-50 inline-block">
-                                          {p === "instagram" && <Instagram className="w-2.5 h-2.5 text-pink-500" />}
-                                          {p === "linkedin" && <Linkedin className="w-2.5 h-2.5 text-blue-500" />}
-                                          {p === "youtube" && <Youtube className="w-2.5 h-2.5 text-red-500" />}
-                                          {p === "facebook" && <Facebook className="w-2.5 h-2.5 text-blue-700" />}
-                                        </span>
-                                      ))}
-                                      <span className="text-[9px] font-mono text-neutral-400 ml-1">{post.time}</span>
+                            {scheduledSlots.length === 0 ? (
+                              <div className="flex flex-col items-center justify-center py-12 px-4 text-center border border-dashed border-[#eae3d2] rounded-2xl bg-neutral-50/50">
+                                <Clock className="w-8 h-8 text-stone-300 mb-2.5 animate-pulse" />
+                                <h4 className="text-xs font-black text-[#042F1A] uppercase tracking-wider">Your queue is empty</h4>
+                                <p className="text-[10px] text-stone-500 max-w-[260px] mt-1 leading-relaxed">
+                                  Draft campaigns or lock in schedule times in the <strong>Publish</strong> or <strong>Calendar</strong> tabs to active launch loops.
+                                </p>
+                                <button 
+                                  onClick={() => setActiveTab("publish")}
+                                  className="mt-4 px-3 py-1.5 bg-[#042F1A] hover:bg-[#117644] text-white rounded-lg text-[9px] font-black uppercase tracking-widest transition-colors cursor-pointer"
+                                >
+                                  Schedule First Post
+                                </button>
+                              </div>
+                            ) : (
+                              scheduledSlots.slice(0, 5).map((post, idx) => {
+                                const title = post.title || post.text || "Untitled Post";
+                                const textSnippet = post.text ? (post.text.length > 60 ? post.text.substring(0, 60) + "..." : post.text) : "No description text provided.";
+                                const platformsList = post.platforms || [post.platform || "instagram"];
+                                const statusLabel = post.status.charAt(0).toUpperCase() + post.status.slice(1);
+                                const timeLabel = `${post.day || "Mon"} - ${post.hour || "12:00"}`;
+                                const imgUrl = post.mediaUrl || "https://picsum.photos/seed/queue/150/100";
+                                return (
+                                  <motion.div
+                                    key={post.id || idx}
+                                    initial={{ opacity: 0, x: -10 }}
+                                    animate={{ opacity: 1, x: 0 }}
+                                    transition={{ delay: idx * 0.08 }}
+                                    className="group p-3 rounded-xl border border-transparent hover:border-[#eae3d2] hover:bg-[#FAF6EE]/40 hover:-translate-y-0.5 transition-all flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4"
+                                  >
+                                    <div className="flex items-center gap-3 min-w-0">
+                                      <img 
+                                        src={imgUrl} 
+                                        alt="Thumbnail preview" 
+                                        className="w-12 h-10 object-cover rounded-lg flex-shrink-0 bg-neutral-100 border border-neutral-100"
+                                        referrerPolicy="no-referrer"
+                                      />
+                                      <div className="min-w-0">
+                                        <h4 className="text-xs font-bold truncate text-[#042F1A]">{title}</h4>
+                                        <p className="text-[10px] text-neutral-400 truncate leading-relaxed">{textSnippet}</p>
+                                        
+                                        {/* Platform Badges */}
+                                        <div className="flex items-center gap-1.5 mt-1">
+                                          {platformsList.map(p => (
+                                            <span key={p} className="p-0.5 rounded bg-neutral-50 inline-block">
+                                              {p === "instagram" && <Instagram className="w-2.5 h-2.5 text-pink-500" />}
+                                              {p === "linkedin" && <Linkedin className="w-2.5 h-2.5 text-blue-500" />}
+                                              {p === "youtube" && <Youtube className="w-2.5 h-2.5 text-red-500" />}
+                                              {p === "facebook" && <Facebook className="w-2.5 h-2.5 text-blue-700" />}
+                                              {p === "tiktok" && <TikTokIcon className="w-2.5 h-2.5 text-indigo-400" />}
+                                              {p === "pinterest" && <PinterestIcon className="w-2.5 h-2.5 text-red-650" />}
+                                            </span>
+                                          ))}
+                                          <span className="text-[9px] font-mono text-neutral-400 ml-1">{timeLabel}</span>
+                                        </div>
+                                      </div>
                                     </div>
-                                  </div>
-                                </div>
 
-                                <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-auto pl-15 sm:pl-0">
-                                  <span className={`px-2 py-0.5 rounded-full text-[8.5px] font-mono uppercase tracking-wider font-extrabold ${
-                                    post.status === "Scheduled" ? "bg-emerald-50 text-[#117644]" :
-                                    post.status === "Needs Review" ? "bg-amber-50 text-[#A07000]" :
-                                    "bg-neutral-50 text-neutral-500"
-                                  }`}>
-                                    {post.status}
-                                  </span>
-                                </div>
-                              </motion.div>
-                            ))}
+                                    <div className="flex items-center gap-2 flex-shrink-0 self-start sm:self-auto pl-15 sm:pl-0">
+                                      <span className={`px-2 py-0.5 rounded-full text-[8.5px] font-mono uppercase tracking-wider font-extrabold ${
+                                        post.status === "scheduled" ? "bg-emerald-50 text-[#117644]" :
+                                        post.status === "published" ? "bg-blue-50 text-blue-600" :
+                                        "bg-neutral-50 text-neutral-500"
+                                      }`}>
+                                        {statusLabel}
+                                      </span>
+                                    </div>
+                                  </motion.div>
+                                );
+                              })
+                            )}
                           </div>
                         </div>
 
@@ -2038,10 +2225,16 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                             View full calendar schedule →
                           </button>
                         </div>
-                      </div>
+                      </motion.div>
 
                       {/* RIGHT (Compact ~40%) Performance Snapshot Combo Chart */}
-                      <div className="lg:col-span-5 glass-card p-6 rounded-3xl flex flex-col justify-between shadow-2xs">
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 0.6, delay: 0.15 }}
+                        className="lg:col-span-5 glass-card p-6 rounded-3xl flex flex-col justify-between shadow-2xs"
+                      >
                         <div className="space-y-4">
                           <div className="space-y-1">
                             <h3 className="font-serif text-base font-black text-[#042F1A] flex items-center gap-2">
@@ -2077,27 +2270,43 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                             })}
                           </div>
 
-                          {/* Recharts Combo Chart (Bar + line overlay) */}
-                          <div className="h-56">
-                            <ResponsiveContainer width="100%" height="100%">
-                              <ComposedChart data={performanceSnapshotData}>
-                                <CartesianGrid stroke="#FAF6EE" strokeDasharray="3 3" />
-                                <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: "bold" }} />
-                                <YAxis tick={{ fontSize: 9, fontWeight: "bold" }} />
-                                <Tooltip contentStyle={{ fontSize: 10, borderRadius: 8, backgroundColor: "#fff", border: "1px solid #eae3d2" }} />
-                                
-                                {/* Base overall engagement metric bars */}
-                                <Bar dataKey="bar" fill="#FAF5EB" radius={[4, 4, 0, 0]} name="Total reach" />
-                                
-                                {/* Overlay active lines */}
-                                {snapshotFilters.Instagram && <Line type="monotone" dataKey="Instagram" stroke="#ec4899" strokeWidth={2} dot={{ r: 2 }} name="Instagram" />}
-                                {snapshotFilters.TikTok && <Line type="monotone" dataKey="TikTok" stroke="#6366f1" strokeWidth={2} dot={{ r: 2 }} name="TikTok" />}
-                                {snapshotFilters.LinkedIn && <Line type="monotone" dataKey="LinkedIn" stroke="#3b82f6" strokeWidth={2} dot={{ r: 2 }} name="LinkedIn" />}
-                                {snapshotFilters.YouTube && <Line type="monotone" dataKey="YouTube" stroke="#ef4444" strokeWidth={1.5} dot={{ r: 1 }} name="YouTube" />}
-                                {snapshotFilters.Facebook && <Line type="monotone" dataKey="Facebook" stroke="#1d4ed8" strokeWidth={1.5} dot={{ r: 1 }} name="Facebook" />}
-                              </ComposedChart>
-                            </ResponsiveContainer>
-                          </div>
+                           {/* Recharts Combo Chart (Bar + line overlay) */}
+                           <div className="h-56 relative overflow-hidden rounded-2xl">
+                             {!Object.values(connectedChannels).some(Boolean) && (
+                               <div className="absolute inset-0 bg-white/70 backdrop-blur-xs z-10 flex flex-col items-center justify-center p-4 text-center">
+                                 <Target className="w-7 h-7 text-stone-400 mb-1.5 animate-bounce" />
+                                 <h4 className="text-xs font-black text-[#042F1A] uppercase tracking-wider">No active channel data</h4>
+                                 <p className="text-[10px] text-stone-500 max-w-[220px] mt-0.5 leading-relaxed">
+                                   Link your accounts in the <strong>Accounts</strong> tab to stream and visualize historical metrics.
+                                 </p>
+                                 <button 
+                                   onClick={() => setActiveTab("accounts")}
+                                   className="mt-3 px-3 py-1.5 bg-[#042F1A] hover:bg-[#117644] text-white rounded-lg text-[8.5px] font-black uppercase tracking-widest transition-colors cursor-pointer"
+                                 >
+                                   Bind Social Accounts
+                                 </button>
+                               </div>
+                             )}
+
+                             <ResponsiveContainer width="100%" height="100%">
+                               <ComposedChart data={Object.values(connectedChannels).some(Boolean) ? performanceSnapshotData : []}>
+                                 <CartesianGrid stroke="#FAF6EE" strokeDasharray="3 3" />
+                                 <XAxis dataKey="name" tick={{ fontSize: 9, fontWeight: "bold" }} />
+                                 <YAxis tick={{ fontSize: 9, fontWeight: "bold" }} />
+                                 <Tooltip contentStyle={{ fontSize: 10, borderRadius: 8, backgroundColor: "#fff", border: "1px solid #eae3d2" }} />
+                                 
+                                 {/* Base overall engagement metric bars */}
+                                 <Bar dataKey="bar" fill="#FAF5EB" radius={[4, 4, 0, 0]} name="Total reach" />
+                                 
+                                 {/* Overlay active lines */}
+                                 {snapshotFilters.Instagram && <Line type="monotone" dataKey="Instagram" stroke="#ec4899" strokeWidth={2} dot={{ r: 2 }} name="Instagram" />}
+                                 {snapshotFilters.TikTok && <Line type="monotone" dataKey="TikTok" stroke="#6366f1" strokeWidth={2} dot={{ r: 2 }} name="TikTok" />}
+                                 {snapshotFilters.LinkedIn && <Line type="monotone" dataKey="LinkedIn" stroke="#3b82f6" strokeWidth={2} dot={{ r: 2 }} name="LinkedIn" />}
+                                 {snapshotFilters.YouTube && <Line type="monotone" dataKey="YouTube" stroke="#ef4444" strokeWidth={1.5} dot={{ r: 1 }} name="YouTube" />}
+                                 {snapshotFilters.Facebook && <Line type="monotone" dataKey="Facebook" stroke="#1d4ed8" strokeWidth={1.5} dot={{ r: 1 }} name="Facebook" />}
+                               </ComposedChart>
+                             </ResponsiveContainer>
+                           </div>
                         </div>
 
                         <div className="p-3 bg-[#FAF6EE]/50 rounded-xl border border-[#eae3d2]/60 mt-4">
@@ -2105,12 +2314,18 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                             <Info className="w-3.5 h-3.5 text-[#117644]" /> Peak weekend engagement spikes are driven organically through synchronized reels formats.
                           </p>
                         </div>
-                      </div>
+                      </motion.div>
 
                     </div>
 
                     {/* SECTION 4 — Platform health row */}
-                    <div className="space-y-3">
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ duration: 0.6 }}
+                      className="space-y-3"
+                    >
                       <div className="flex items-center justify-between">
                         <h4 className="font-serif text-sm font-black text-[#042F1A] uppercase tracking-wider opacity-85">
                           Multi-Platform Node Integration Health
@@ -2122,65 +2337,81 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
 
                       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
                         {[
-                          { id: "instagram", name: "Instagram", icon: <Instagram className="w-4 h-4 text-pink-500" />, followers: "14.5k", status: "connected" },
-                          { id: "linkedin", name: "LinkedIn", icon: <Linkedin className="w-4 h-4 text-blue-500" />, followers: "8.2k", status: "connected" },
-                          { id: "facebook", name: "Meta Grid", icon: <Facebook className="w-4 h-4 text-blue-700" />, followers: "11.2k", status: "connected" },
-                          { id: "youtube", name: "YouTube", icon: <Youtube className="w-4 h-4 text-red-500" />, followers: "25.1k", status: "connected" },
-                          { id: "tiktok", name: "TikTok Node", icon: <TikTokIcon className="w-4 h-4 text-indigo-400" />, followers: "452", status: "needs_reauth" },
-                          { id: "pinterest", name: "Pinterest Board", icon: <PinterestIcon className="w-4 h-4 text-red-650" />, followers: "1.2k", status: "needs_reauth" }
+                          { id: "instagram", name: "Instagram", icon: <Instagram className="w-4 h-4 text-pink-500" /> },
+                          { id: "linkedin", name: "LinkedIn", icon: <Linkedin className="w-4 h-4 text-blue-500" /> },
+                          { id: "facebook", name: "Meta Grid", icon: <Facebook className="w-4 h-4 text-blue-700" /> },
+                          { id: "youtube", name: "YouTube", icon: <Youtube className="w-4 h-4 text-red-500" /> },
+                          { id: "tiktok", name: "TikTok Node", icon: <TikTokIcon className="w-4 h-4 text-indigo-400" /> },
+                          { id: "pinterest", name: "Pinterest Board", icon: <PinterestIcon className="w-4 h-4 text-red-650" /> }
                         ].map((plat) => {
-                          const needsReauth = plat.status === "needs_reauth";
+                          const isConnected = !!connectedChannels[plat.id];
                           return (
-                            <div 
+                            <motion.div 
                               key={plat.id}
+                              initial={{ opacity: 0, scale: 0.93 }}
+                              whileInView={{ opacity: 1, scale: 1 }}
+                              viewport={{ once: true, margin: "-40px" }}
+                              transition={{ duration: 0.4 }}
                               className="p-4 glass-card glass-card-hover rounded-2xl flex flex-col justify-between items-center text-center relative"
                             >
                               <span className="p-1.5 bg-neutral-50 rounded-full inline-block mb-2">{plat.icon}</span>
                               <div>
                                 <h5 className="text-[10.5px] font-black text-[#042F1A]">{plat.name}</h5>
-                                <p className="text-[9px] text-[#042F1A]/50 font-mono tracking-tighter">{plat.followers} Followers</p>
+                                <p className="text-[9px] text-[#042F1A]/50 font-mono tracking-tighter">
+                                  {isConnected ? "Active Bind" : "Not Connected"}
+                                </p>
                               </div>
 
                               <div className="mt-3 flex items-center justify-center gap-1.5 select-none text-[8.5px] font-mono uppercase tracking-wider font-extrabold">
                                 <div className="relative flex h-2 w-2">
-                                  {needsReauth && (
+                                  {!isConnected && (
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75" />
                                   )}
-                                  <span className={`relative inline-flex rounded-full h-2 w-2 ${needsReauth ? "bg-amber-500" : "bg-emerald-500"}`} />
+                                  <span className={`relative inline-flex rounded-full h-2 w-2 ${isConnected ? "bg-emerald-500" : "bg-amber-500"}`} />
                                 </div>
-                                <span className={needsReauth ? "text-amber-600" : "text-emerald-700"}>
-                                  {needsReauth ? "Reauth Required" : "Connected"}
+                                <span className={isConnected ? "text-emerald-700" : "text-amber-600"}>
+                                  {isConnected ? "Connected" : "Unbound"}
                                 </span>
                               </div>
 
                               <button 
-                                onClick={() => setActiveTab("analytics")} 
+                                onClick={() => setActiveTab(isConnected ? "analytics" : "accounts")} 
                                 className="mt-2 text-[8px] text-[#117644] font-black opacity-80 hover:underline hover:opacity-100"
                               >
-                                View Insights
+                                {isConnected ? "View Insights" : "Bind Now"}
                               </button>
-                            </div>
+                            </motion.div>
                           );
                         })}
 
                         {/* Dashed capsule add account card */}
-                        <button
+                        <motion.button
                           onClick={() => setActiveTab("accounts")}
+                          initial={{ opacity: 0, scale: 0.93 }}
+                          whileInView={{ opacity: 1, scale: 1 }}
+                          viewport={{ once: true, margin: "-40px" }}
+                          transition={{ duration: 0.4, delay: 0.1 }}
                           className="p-4 border border-dashed border-[#eae3d2] bg-neutral-50/40 rounded-2xl flex flex-col items-center justify-center text-center group hover:border-[#117644]/50 hover:bg-white transition-all cursor-pointer min-h-[120px]"
                         >
                           <Plus className="w-5 h-5 text-[#042F1A]/40 group-hover:text-[#117644] mb-1" />
                           <span className="text-[9.5px] font-mono uppercase tracking-wider font-extrabold text-[#042F1A]/50 group-hover:text-[#042F1A]">
                             + Connect
                           </span>
-                        </button>
+                        </motion.button>
                       </div>
-                    </div>
+                    </motion.div>
 
                     {/* SECTION 4.5 — Recent Performance & Best Time to Post (DASHBOARD HIGHLIGHTS) */}
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-stretch">
                       
                       {/* RECENT PERFORMANCE WIDGET */}
-                      <div className="glass-card p-6 rounded-3xl flex flex-col justify-between shadow-2xs text-left">
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 0.6 }}
+                        className="glass-card p-6 rounded-3xl flex flex-col justify-between shadow-2xs text-left"
+                      >
                         <div className="space-y-4">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#FAF6EE] pb-3 gap-2">
                             <div>
@@ -2372,10 +2603,16 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                             Full Analytics Suite →
                           </span>
                         </div>
-                      </div>
+                      </motion.div>
 
                       {/* BEST TIME TO POST WIDGET */}
-                      <div className="glass-card p-6 rounded-3xl flex flex-col justify-between shadow-2xs text-left">
+                      <motion.div
+                        initial={{ opacity: 0, y: 30 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true, margin: "-80px" }}
+                        transition={{ duration: 0.6, delay: 0.15 }}
+                        className="glass-card p-6 rounded-3xl flex flex-col justify-between shadow-2xs text-left"
+                      >
                         <div className="space-y-4">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between border-b border-[#FAF6EE] pb-3 gap-2">
                             <div>
@@ -2492,12 +2729,18 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                         <div className="p-3.5 bg-[#FAF6EE]/50 border border-[#eae3d2]/40 rounded-2xl text-[10px] text-[#042F1A]/80 leading-relaxed font-semibold">
                           {bestTimesToPost[bestTimeActivePlatform as keyof typeof bestTimesToPost]?.desc || bestTimesToPost.instagram.desc}
                         </div>
-                      </div>
+                      </motion.div>
 
                     </div>
 
                     {/* SECTION 5 — Recent Activity feed */}
-                    <div className="bg-white border border-[#eae3d2] p-5 rounded-3xl shadow-2xs">
+                    <motion.div
+                      initial={{ opacity: 0, y: 30 }}
+                      whileInView={{ opacity: 1, y: 0 }}
+                      viewport={{ once: true, margin: "-80px" }}
+                      transition={{ duration: 0.6 }}
+                      className="bg-white border border-[#eae3d2] p-5 rounded-3xl shadow-2xs"
+                    >
                       <div className="border-b pb-3 border-[#FAF6EE] mb-4">
                         <h4 className="font-serif text-sm font-black text-[#042F1A] flex items-center gap-1.5">
                           <Activity className="w-4 h-4 text-[#117644]" /> Recent Workspace Activity
@@ -2522,7 +2765,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                           </div>
                         ))}
                       </div>
-                    </div>
+                    </motion.div>
                   </>
                 ) : (
                   /* SECTION 6 — Empty Onboarding State Variant */
@@ -2560,7 +2803,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                         Connect your first platform to get started
                       </h3>
                       <p className="text-xs text-[#042F1A]/60 max-w-md mx-auto leading-relaxed">
-                        Trend Wave has detected zero connected social profiles in this brand workspace. Initialize active connections and draft smart visual triggers instantly.
+                        Postrick has detected zero connected social profiles in this brand workspace. Initialize active connections and draft smart visual triggers instantly.
                       </p>
                     </div>
 
@@ -2610,7 +2853,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                 {/* Header row */}
                 <div className="flex flex-col md:flex-row md:items-center justify-between border-b pb-4 gap-4">
                   <div>
-                    <h2 className="font-serif text-2xl font-black text-[#042F1A] tracking-tight">Trend Wave Composer</h2>
+                    <h2 className="font-serif text-2xl font-black text-[#042F1A] tracking-tight">Postrick Composer</h2>
                     <p className="text-xs text-[#042F1A]/60 font-medium">Write your post once and instantly render adapting mockups across all networks before publishing.</p>
                   </div>
                   <div className="flex items-center gap-2 flex-wrap">
@@ -2886,11 +3129,35 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                       )}
 
                       <div 
-                        onClick={() => document.getElementById("hidden-file-input")?.click()}
-                        className="border-2 border-dashed border-[#eae3d2] hover:border-[#117644] bg-[#FAF5EB]/10 p-4 rounded-2xl text-center cursor-pointer transition-all space-y-1"
+                        onClick={() => document.getElementById("hidden-file-input-composer")?.click()}
+                        onDragOver={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                        }}
+                        onDrop={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                            const filesArr = Array.from(e.dataTransfer.files);
+                            const mediaFiles = filesArr.filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
+                            if (mediaFiles.length > 0) {
+                              const formatted = mediaFiles.map((f, i) => ({
+                                id: `custom-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+                                url: URL.createObjectURL(f),
+                                type: f.type.startsWith("video") ? ("video" as const) : ("image" as const),
+                                name: f.name,
+                                cropFits: ["instagram", "linkedin", "facebook", "youtube", "tiktok"],
+                              }));
+                              setUploadedMedia(prev => [...prev, ...formatted]);
+                              setSelectedMediaId(formatted[0].id);
+                              confetti({ particleCount: 30, spread: 25 });
+                            }
+                          }
+                        }}
+                        className="border-2 border-dashed border-[#eae3d2] hover:border-[#117644] hover:bg-[#117644]/5 bg-[#FAF5EB]/10 p-4 rounded-2xl text-center cursor-pointer transition-all space-y-1"
                       >
                         <input 
-                          id="hidden-file-input"
+                          id="hidden-file-input-composer"
                           type="file" 
                           multiple 
                           accept="image/*,video/*"
@@ -3125,11 +3392,36 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                               Attach Media (Local Device)
                             </label>
                             <div 
-                              onClick={() => document.getElementById("hidden-file-input")?.click()}
-                              className="border-2 border-dashed border-[#eae3d2] hover:border-[#117644] bg-[#FAF5EB]/10 hover:bg-neutral-50/50 p-6 rounded-2xl text-center cursor-pointer transition-all space-y-2 group"
+                              onClick={() => document.getElementById("hidden-file-input-publish")?.click()}
+                              onDragOver={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                              }}
+                              onDrop={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                                  const filesArr = Array.from(e.dataTransfer.files);
+                                  const mediaFiles = filesArr.filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
+                                  if (mediaFiles.length > 0) {
+                                    const formatted = mediaFiles.map((f, i) => ({
+                                      id: `custom-${Date.now()}-${i}-${Math.random().toString(36).substr(2, 4)}`,
+                                      url: URL.createObjectURL(f),
+                                      type: f.type.startsWith("video") ? ("video" as const) : ("image" as const),
+                                      name: f.name,
+                                      cropFits: ["instagram", "linkedin", "facebook", "youtube", "tiktok"],
+                                      cropWarning: f.type.startsWith("video") ? "Pinterest constraints: Videos require vertical 9:16 layout" : undefined
+                                    }));
+                                    setUploadedMedia(prev => [...prev, ...formatted]);
+                                    setSelectedMediaId(formatted[0].id);
+                                    confetti({ particleCount: 30, spread: 25 });
+                                  }
+                                }
+                              }}
+                              className="border-2 border-dashed border-[#eae3d2] hover:border-[#117644] bg-[#FAF5EB]/10 hover:bg-[#117644]/5 p-6 rounded-2xl text-center cursor-pointer transition-all space-y-2 group"
                             >
                               <input 
-                                id="hidden-file-input"
+                                id="hidden-file-input-publish"
                                 type="file" 
                                 multiple 
                                 accept="image/*,video/*"
@@ -3167,9 +3459,9 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                             <div className="flex items-center justify-between">
                               <span className="text-[9px] bg-indigo-100 border border-indigo-200 text-[#117644] font-mono font-black px-2 py-0.5 rounded-md uppercase tracking-wide flex items-center gap-1">
                                 <Sparkles className="w-3 h-3 text-amber-500 animate-pulse" />
-                                Trend Wave AI Art Generator
+                                Postrick AI Art Generator
                               </span>
-                              <span className="text-[9px] font-mono text-neutral-400">Model: wave-art-v2</span>
+                              <span className="text-[9px] font-mono text-neutral-400">Model: postrick-art-v2</span>
                             </div>
                             
                             <div className="space-y-1.5 text-left">
@@ -3561,13 +3853,13 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                           </h3>
                         </div>
 
-                        {/* ✨ Trend Wave AI Assisted Viral generator trigger block */}
+                        {/* ✨ Postrick AI Assisted Viral generator trigger block */}
                         <div className="bg-[#FAF5EB]/50 border border-[#eae3d2] p-4 rounded-2xl space-y-3">
                           <div className="flex justify-between items-center">
                             <label className="block text-[9px] font-mono uppercase font-black tracking-widest text-[#117644]">
                               ✨ AI Copywriting Topic Brief
                             </label>
-                            <span className="text-[9px] font-mono text-[#117644]">wave-3.5-flash</span>
+                            <span className="text-[9px] font-mono text-[#117644]">postrick-3.5-flash</span>
                           </div>
                           
                           <textarea 
@@ -4488,10 +4780,10 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                     <div className="p-3 flex items-center justify-between border-b border-neutral-100">
                                       <div className="flex items-center gap-2">
                                         <div className="w-7 h-7 rounded-full bg-gradient-to-tr from-yellow-500 to-purple-600 p-0.5">
-                                          <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[10px] font-black text-[#042F1A]">TW</div>
+                                          <div className="w-full h-full rounded-full bg-white flex items-center justify-center text-[10px] font-black text-[#042F1A]">PO</div>
                                         </div>
                                         <div>
-                                          <span className="text-[10px] font-black block">trendwave_aesthetic</span>
+                                          <span className="text-[10px] font-black block">postrick_aesthetic</span>
                                           <span className="text-[8px] text-neutral-400 block -mt-0.5">San Francisco, California</span>
                                         </div>
                                       </div>
@@ -4532,7 +4824,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                       <div className="text-[10px] space-y-1 leading-relaxed text-[#042F1A]">
                                         <p className="font-extrabold">2,410 Likes · 32 Comments</p>
                                         <p className="whitespace-pre-wrap">
-                                          <span className="font-bold mr-1.5">trendwave_aesthetic</span>
+                                          <span className="font-bold mr-1.5">postrick_aesthetic</span>
                                           {/* Simple custom hashtag color regex mock styling */}
                                           {fullCaptionToRender.split(" ").map((w, idx) => {
                                             if (w.startsWith("#")) return <span key={idx} className="text-pink-600 font-medium hover:underline">{w} </span>;
@@ -4605,7 +4897,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
 
                                       {/* Bottom Content Caption indicators */}
                                       <div className="space-y-1.5 pr-14 select-none pointer-events-auto">
-                                        <h4 className="font-extrabold text-[#10b981] text-xs">@trendwave_official</h4>
+                                        <h4 className="font-extrabold text-[#10b981] text-xs">@postrick_official</h4>
                                         <p className="text-[10.5px] line-clamp-3 leading-relaxed text-neutral-100 whitespace-pre-wrap">
                                           {fullCaptionToRender.split(" ").map((w, idx) => {
                                             if (w.startsWith("#")) return <span key={idx} className="text-[#00f2fe] font-bold">{w} </span>;
@@ -4613,7 +4905,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                           })}
                                         </p>
                                         <p className="text-[9px] font-mono text-emerald-400 font-bold flex items-center gap-1">
-                                          <Volume2 className="w-3.5 h-3.5 animate-pulse" /> Original sound track - Trend Wave Organic loops
+                                          <Volume2 className="w-3.5 h-3.5 animate-pulse" /> Original sound track - Postrick Organic loops
                                         </p>
                                       </div>
                                     </div>
@@ -4625,10 +4917,10 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                   <div className="w-full bg-white rounded-2xl border border-neutral-200 p-4 space-y-3.5 text-left font-sans shadow-md">
                                     <div className="flex justify-between items-start">
                                       <div className="flex gap-2.5">
-                                        <div className="w-9 h-9 rounded bg-[#042F1A] font-serif text-white font-extrabold text-sm flex items-center justify-center">T</div>
+                                        <div className="w-9 h-9 rounded bg-[#042F1A] font-serif text-white font-extrabold text-sm flex items-center justify-center">P</div>
                                         <div>
                                           <span className="font-black text-xs block text-slate-950 flex items-center gap-1">
-                                            Trend Wave Systems LLC
+                                            Postrick Systems LLC
                                             <span className="text-[8px] bg-blue-50 text-blue-700 font-bold px-1.5 py-0.5 rounded-full border border-blue-200 select-none uppercase">Promoted</span>
                                           </span>
                                           <span className="text-[9px] text-neutral-400 block -mt-0.5">18,240,110 seguidores · Patrocinado · 🌐</span>
@@ -4663,7 +4955,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                           <img src={activeMedia.url} alt="LinkedIn banner" className="w-full h-40 object-cover" referrerPolicy="no-referrer" />
                                         )}
                                         <div className="p-3 bg-white border-t space-y-0.5">
-                                          <span className="text-[8.5px] font-mono tracking-widest text-[#117644] font-bold block uppercase">TRENDWAVE.COM/CIRCULARITY</span>
+                                          <span className="text-[8.5px] font-mono tracking-widest text-[#117644] font-bold block uppercase">POSTRICK.COM/CIRCULARITY</span>
                                           <span className="text-[11px] font-black text-slate-800 block">Eco-Design Circular Devices Roadmap Release</span>
                                         </div>
                                       </div>
@@ -4691,10 +4983,10 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                 {activePreviewTab === "youtube" && (
                                   <div className="w-full bg-white rounded-xl border border-neutral-200 p-4 text-left font-sans shadow-md space-y-3">
                                     <div className="flex gap-2.5 items-center">
-                                      <div className="w-8 h-8 rounded-full bg-red-650 flex items-center justify-center text-white font-black text-xs leading-none">TW</div>
+                                      <div className="w-8 h-8 rounded-full bg-red-650 flex items-center justify-center text-white font-black text-xs leading-none">PO</div>
                                       <div>
                                         <span className="font-extrabold text-xs text-slate-900 block flex items-center gap-1">
-                                          Trend Wave Circular Systems
+                                          Postrick Circular Systems
                                           <span className="w-2.5 h-2.5 rounded-full bg-blue-500 text-white flex items-center justify-center font-serif text-[6px]">✓</span>
                                         </span>
                                         <span className="text-[9px] text-neutral-400 block -mt-0.5">Community channel · 1.1M Subscribers</span>
@@ -4747,9 +5039,9 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                   <div className="w-full bg-white rounded-2xl border border-neutral-200 p-4 space-y-3.5 text-left font-sans shadow-md">
                                     <div className="flex items-center justify-between">
                                       <div className="flex gap-2.5 items-center">
-                                        <div className="w-8 h-8 rounded-full bg-neutral-900 text-white font-extrabold flex items-center justify-center text-[10px]">TW</div>
+                                        <div className="w-8 h-8 rounded-full bg-neutral-900 text-white font-extrabold flex items-center justify-center text-[10px]">P</div>
                                         <div>
-                                          <span className="font-bold text-xs text-slate-900 block">Trend Wave Organic Technologies</span>
+                                          <span className="font-bold text-xs text-slate-900 block">Postrick Organic Technologies</span>
                                           <span className="text-[9px] text-neutral-400 block -mt-0.5">3 hours ago · 🌐</span>
                                         </div>
                                       </div>
@@ -4799,7 +5091,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                   <div className="w-full bg-white rounded-2xl border border-neutral-200 p-4 space-y-4 text-left font-sans shadow-md">
                                     <div className="flex justify-between items-center select-none pt-0.5">
                                       <div className="flex gap-1">
-                                        <span className="text-[9.5px] font-mono text-neutral-400">pinterest.com/trendwave</span>
+                                        <span className="text-[9.5px] font-mono text-neutral-400">pinterest.com/postrick</span>
                                       </div>
                                       <button className="bg-red-650 hover:bg-red-750 text-white font-black text-xs px-4 py-1.8 rounded-full shadow-sm">Save</button>
                                     </div>
@@ -4823,7 +5115,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
 
                                     {/* Pin text detail info */}
                                     <div className="space-y-1 pt-1">
-                                      <h3 className="font-serif font-black text-slate-900 text-sm leading-tight">Trend Wave circular hardware ecosystems</h3>
+                                      <h3 className="font-serif font-black text-slate-900 text-sm leading-tight">Postrick circular hardware ecosystems</h3>
                                       <p className="text-[10.5px] text-neutral-500 leading-relaxed max-h-24 overflow-y-auto whitespace-pre-wrap">
                                         {fullCaptionToRender}
                                       </p>
@@ -4832,9 +5124,9 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                     {/* Profile section footer */}
                                     <div className="border-t pt-3 flex items-center justify-between">
                                       <div className="flex items-center gap-2">
-                                        <div className="w-7 h-7 rounded-full bg-red-600 text-white font-extrabold text-xs flex items-center justify-center">T</div>
+                                        <div className="w-7 h-7 rounded-full bg-red-600 text-white font-extrabold text-xs flex items-center justify-center">P</div>
                                         <div>
-                                          <span className="font-bold text-[10.5px] block">Trend Wave Systems</span>
+                                          <span className="font-bold text-[10.5px] block">Postrick Systems</span>
                                           <span className="text-[8.5px] text-neutral-400 block -mt-0.5">450k Monthly Views</span>
                                         </div>
                                       </div>
@@ -5122,7 +5414,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                 <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 text-left">
                   <div>
                     <h1 className="text-3xl lg:text-4xl font-sans font-extrabold text-[#042F1A] tracking-tight leading-none mt-1">
-                      {currentWorkspace === "Trend Wave Main Brand" ? "Stay up to date, Trend Wave" : `Stay up to date, ${currentWorkspace}`}
+                      {currentWorkspace === "Postrick Main Brand" ? "Stay up to date, Postrick" : `Stay up to date, ${currentWorkspace}`}
                     </h1>
                     <p className="text-xs text-[#042F1A]/60 font-medium font-serif italic mt-1 bg-neutral-100/50 inline-block px-3 py-0.5 rounded-full">
                       Showing real-time cross-platform content delivery queue
@@ -5703,7 +5995,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                             <motion.div
                                               key={item.id}
                                               draggable
-                                              onDragStart={(e) => handleDragStart(e, item.id)}
+                                              onDragStart={(e: any) => handleDragStart(e, item.id)}
                                               onClick={() => setSelectedCalendarPostId(item.id)}
                                               whileHover={{ scale: 1.02 }}
                                               className={`rounded-[26px] p-4 border ${themeColor.border} ${themeColor.bg} ${themeColor.borderLeft} transition-all cursor-grab active:cursor-grabbing shadow-xs hover:shadow-md ${isDragSource ? "opacity-35" : ""}`}
@@ -6714,7 +7006,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                               required
                               value={newSlotText}
                               onChange={e => setNewSlotText(e.target.value)}
-                              placeholder="Write once, Trend Wave adapts automatically across pipeline channels..."
+                              placeholder="Write once, Postrick adapts automatically across pipeline channels..."
                               className="w-full text-xs p-3 rounded-2xl border bg-white focus:outline-[#117644] font-semibold min-h-[90px] text-[#042F1A] placeholder-neutral-300"
                             />
                           </div>
@@ -7141,7 +7433,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                     key={card.id}
                                     layoutId={`card-${card.id}`}
                                     draggable
-                                    onDragStart={(e) => {
+                                    onDragStart={(e: any) => {
                                       setDailyDraggedId(card.id);
                                       e.dataTransfer.setData("text/plain", card.id);
                                     }}
@@ -7197,7 +7489,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                         <button 
                                           onClick={() => {
                                             if (confirm("Remove this planned slot?")) {
-                                              setScheduledSlots(prev => prev.filter(p => p.id !== card.id));
+                                              handleDeletePost(card.id);
                                               setCalendarToast({ message: "Payload deleted successfully", originalSlot: null });
                                             }
                                           }}
@@ -7439,7 +7731,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                 exit={{ opacity: 0, y: -15 }}
                 className="space-y-6"
               >
-                <TrendWaveAnalytics />
+                <PostrickAnalytics />
               </motion.div>
             )}
 
@@ -7452,7 +7744,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                 exit={{ opacity: 0, y: -15 }}
                 className="space-y-6 animate-fadeIn"
               >
-                <TrendWaveAccounts />
+                <PostrickAccounts />
               </motion.div>
             )}
 
@@ -7465,7 +7757,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                 exit={{ opacity: 0, y: -15 }}
                 className="space-y-6 animate-fadeIn"
               >
-                <TrendWaveSettings />
+                <PostrickSettings />
               </motion.div>
             )}
 
@@ -7474,7 +7766,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                 <h3 className="font-serif text-sm font-bold text-[#042F1A]">Help Center &amp; Documentation</h3>
                 <p className="text-xs text-neutral-500 leading-relaxed">Need a hand? Explore frequently asked questions or drop us a line below. Our team is here to help!</p>
                 <div className="border border-dashed p-8 rounded-xl text-center text-xs text-neutral-500 leading-normal font-medium bg-[#FAF6EE]/30">
-                  Need custom help? Email us anytime at: <span className="text-[#117644] underline font-bold">support@trendwave.club</span> for quick replies.
+                  Need custom help? Email us anytime at: <span className="text-[#117644] underline font-bold">support@postrick.club</span> for quick replies.
                 </div>
               </motion.div>
             )}
@@ -7485,7 +7777,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
 
         {/* 4. FOOTER CREDITS */}
         <footer className="bg-[#042F1A] border-t border-[#042F1A] text-[#FAF6EE]/80 py-6 text-center text-xs relative z-10">
-          <p>© {new Date().getFullYear()} Trend Wave. Designed with care for modern creators and brands.</p>
+          <p>© {new Date().getFullYear()} Postrick. Designed with care for modern creators and brands.</p>
         </footer>
 
       </div>
@@ -7557,7 +7849,6 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
           
           <div className="w-full flex flex-col items-center gap-2.5">
             {[
-              { id: "home", label: "Home", icon: <Home className="w-4 h-4" /> },
               { id: "dashboard", label: "Dashboard", icon: <Layout className="w-4 h-4" /> },
               { id: "publish", label: "Publish", icon: <Send className="w-4 h-4" /> },
               { id: "calendar", label: "Calendar", icon: <Calendar className="w-4 h-4" /> },
@@ -7570,12 +7861,8 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                 <button
                   key={item.id}
                   onClick={() => {
-                    if (item.id === "home") {
-                      onExitApp();
-                    } else {
-                      setActiveTab(item.id);
-                      confetti({ particleCount: 15, spread: 25 });
-                    }
+                    setActiveTab(item.id);
+                    confetti({ particleCount: 15, spread: 25 });
                   }}
                   className={`flex flex-col items-center justify-center p-1 transition-all w-11 h-11 rounded-xl relative ${
                     active 
@@ -7608,6 +7895,108 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
           <HelpCircle className="w-4 h-4" />
         </button>
       </nav>
+
+      {/* AUTHENTICATION PORTAL MODAL */}
+      <AnimatePresence>
+        {showAuthModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[99999] flex items-center justify-center p-4">
+            <div className="fixed inset-0" onClick={() => setShowAuthModal(false)} />
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0, y: 15 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 15 }}
+              className="bg-white border-2 border-[#117644] p-8 rounded-3xl max-w-sm w-full space-y-6 shadow-2xl relative z-50 text-left"
+            >
+              <button 
+                onClick={() => setShowAuthModal(false)}
+                className="absolute top-4 right-4 text-stone-400 hover:text-stone-600 cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+              
+              <div className="text-center space-y-1">
+                <span className="text-[10px] font-mono font-black text-[#117644] uppercase tracking-widest block">SECURE CREDENTIAL ACCESS</span>
+                <h3 className="font-serif font-black text-xl text-[#042F1A]">
+                  {authTab === "login" ? "Welcome Back!" : "Create Brand Account"}
+                </h3>
+                <p className="text-xs text-stone-500 leading-normal">
+                  {authTab === "login" ? "Sign in to persist your campaigns, calendars, and channels." : "Register to activate auto-publishing, brand tools, and AI writing."}
+                </p>
+              </div>
+
+              <form onSubmit={handleAuthSubmit} className="space-y-4">
+                {authTab === "register" && (
+                  <div className="space-y-1">
+                    <label className="text-[10px] font-mono font-black text-stone-400 uppercase tracking-wider block">Full Name</label>
+                    <input 
+                      type="text" 
+                      value={authForm.fullName}
+                      onChange={(e) => setAuthForm({ ...authForm, fullName: e.target.value })}
+                      placeholder="John Postrick"
+                      required
+                      className="w-full text-xs font-medium px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#117644] transition-all"
+                    />
+                  </div>
+                )}
+                
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono font-black text-stone-400 uppercase tracking-wider block">Email Address</label>
+                  <input 
+                    type="email" 
+                    value={authForm.email}
+                    onChange={(e) => setAuthForm({ ...authForm, email: e.target.value })}
+                    placeholder="example@postrick.com"
+                    required
+                    className="w-full text-xs font-medium px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#117644] transition-all"
+                  />
+                </div>
+
+                <div className="space-y-1">
+                  <label className="text-[10px] font-mono font-black text-stone-400 uppercase tracking-wider block">Password</label>
+                  <input 
+                    type="password" 
+                    value={authForm.password}
+                    onChange={(e) => setAuthForm({ ...authForm, password: e.target.value })}
+                    placeholder="••••••••"
+                    required
+                    className="w-full text-xs font-medium px-3.5 py-2.5 bg-stone-50 border border-stone-200 rounded-xl focus:outline-none focus:ring-1 focus:ring-[#117644] transition-all"
+                  />
+                </div>
+
+                {authError && (
+                  <div className="p-2.5 bg-rose-50 border border-rose-200 text-rose-600 rounded-xl text-[10px] font-semibold leading-relaxed">
+                    {authError}
+                  </div>
+                )}
+
+                <button 
+                  type="submit" 
+                  disabled={authLoading}
+                  className="w-full py-3 bg-[#042F1A] text-white hover:bg-[#117644] rounded-xl text-xs font-black uppercase tracking-widest transition-colors flex items-center justify-center gap-2 cursor-pointer disabled:opacity-75"
+                >
+                  {authLoading ? (
+                    <>
+                      <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                      <span>Processing Auth...</span>
+                    </>
+                  ) : (
+                    <span>{authTab === "login" ? "Login Securely" : "Register Brand Account"}</span>
+                  )}
+                </button>
+              </form>
+
+              <div className="text-center pt-2">
+                <button 
+                  onClick={() => { setAuthTab(authTab === "login" ? "register" : "login"); setAuthError(""); }}
+                  className="text-[10.5px] font-bold text-[#117644] hover:underline"
+                >
+                  {authTab === "login" ? "Don't have an account? Sign Up" : "Already have an account? Sign In"}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

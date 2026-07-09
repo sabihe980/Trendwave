@@ -1,5 +1,5 @@
 -- =====================================================================
--- SAVVYGROW AI - TRIGGERS, INDEXES & AUTOMATIC USER ONBOARDING
+-- POSTRICK AI - TRIGGERS, INDEXES & AUTOMATIC USER ONBOARDING
 -- Migration: 20260623000002_triggers_and_indexes.sql
 -- Description: Sets up high-performance indices and database-level triggers
 -- =====================================================================

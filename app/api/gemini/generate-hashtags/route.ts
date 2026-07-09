@@ -1,5 +1,6 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/security";
 
 // Fallback trending hashtags if API is unavailable
 const fallbackHashtags = [
@@ -28,6 +29,11 @@ async function retryWithBackoff<T>(
 
 export async function POST(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const { caption, platform } = await req.json();
     
     if (!caption || caption.trim().length === 0) {

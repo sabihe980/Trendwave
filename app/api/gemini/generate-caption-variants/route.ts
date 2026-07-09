@@ -1,5 +1,6 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/security";
 
 // Helper function to generate high-quality mock variants on fallback/key absence
 function getMockVariants(
@@ -45,7 +46,7 @@ function getMockVariants(
   const selectedTemplates = mockDataTemplates[tone as keyof typeof mockDataTemplates] || mockDataTemplates["Professional"];
   
   const hashtagsMapByPlatform: Record<string, string[]> = {
-    instagram: ["#socialgrowth", "#creators", "#aestheticfeed", "#savvygrow"],
+    instagram: ["#socialgrowth", "#creators", "#aestheticfeed", "#postrick"],
     tiktok: ["#fyp", "#growthhacks", "#marketingtips", "#foryou"],
     linkedin: ["#Automation", "#Productivity", "#Management", "#BusinessInnovation"],
     youtube: ["#shorts", "#contentcreator", "#organicgrowth", "#diy"],
@@ -53,7 +54,7 @@ function getMockVariants(
     pinterest: ["#aestheticworkspace", "#pinterestinspiration", "#inspiration", "#visualboard"]
   };
 
-  const baseHashtags = hashtagsMapByPlatform[targetPlatforms[0] as string] || ["#socialgrow", "#savvygrow", "#creatorflow"];
+  const baseHashtags = hashtagsMapByPlatform[targetPlatforms[0] as string] || ["#socialgrow", "#postrick", "#creatorflow"];
 
   return Array.from({ length: 3 }).map((_, i) => {
     const plt = targetPlatforms[i % targetPlatforms.length];
@@ -99,20 +100,24 @@ async function retryWithBackoff<T>(
 }
 
 export async function POST(req: NextRequest) {
-  const body = await req.json();
-  const { 
-    prompt, 
-    platforms = ["instagram"], 
-    tone = "Professional", 
-    audience = "", 
-    hasImage = false,
-    refinement = "",
-    existingVariants = []
-  } = body;
-
-  const targetPlatforms = platforms.length > 0 ? platforms : ["instagram"];
-
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
+    const body = await req.json();
+    const { 
+      prompt, 
+      platforms = ["instagram"], 
+      tone = "Professional", 
+      audience = "", 
+      hasImage = false,
+      refinement = "",
+      existingVariants = []
+    } = body;
+
+    const targetPlatforms = platforms.length > 0 ? platforms : ["instagram"];
     const key = process.env.GEMINI_API_KEY;
 
     // Fallback Mock Data generation if no Gemini API Key is present

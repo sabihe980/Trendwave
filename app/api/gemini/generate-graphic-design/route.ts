@@ -1,8 +1,14 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const key = process.env.GEMINI_API_KEY;
     const body = await req.json();
     const { 
@@ -46,7 +52,7 @@ export async function POST(req: NextRequest) {
       const headlines = [
         prompt || "THE FUTURE IS CONSCIOUS",
         "30% PACKAGING DECREASE",
-        "SAVVYGROW CO.",
+        "POSTRICK CO.",
         "CRAFTED FOR DURABILITY",
         "GREEN UP YOUR SPACE"
       ];

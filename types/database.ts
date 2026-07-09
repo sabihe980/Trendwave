@@ -1,5 +1,5 @@
 // =====================================================================
-// SAVVYGROW AI - CORE DATABASE AND MODEL TYPESCRIPT TYPES
+// POSTRICK AI - CORE DATABASE AND MODEL TYPESCRIPT TYPES
 // File: /types/database.ts
 // =====================================================================
 

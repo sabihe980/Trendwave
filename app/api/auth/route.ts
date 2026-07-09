@@ -1,5 +1,5 @@
 // =====================================================================
-// SAVVYGROW AI - COMPLETE SAAS AUTHENTICATION ENDPOINT
+// POSTRICK AI - COMPLETE SAAS AUTHENTICATION ENDPOINT
 // File: /app/api/auth/route.ts
 // =====================================================================
 

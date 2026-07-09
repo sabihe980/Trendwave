@@ -1,5 +1,5 @@
 -- =====================================================================
--- SAVVYGROW AI - AUTOMATED SCHEDULING & CRON BACKGROUND PROCESSORS
+-- POSTRICK AI - AUTOMATED SCHEDULING & CRON BACKGROUND PROCESSORS
 -- Migration: 20260623000003_pg_cron_setup.sql
 -- Description: Sets up the pg_cron and pg_net extensions with highly resilient,
 --              idempotent background triggers to automatically poll scheduled posts

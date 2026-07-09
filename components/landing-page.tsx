@@ -29,6 +29,7 @@ import {
   DollarSign
 } from "lucide-react";
 import confetti from "canvas-confetti";
+import { PostrickLogo } from "./icons";
 
 interface LandingPageProps {
   onEnterApp: () => void;
@@ -106,18 +107,20 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
       "Completed! 🌟 Ready to broadcast."
     ];
     return (
-      <div className="mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all bg-[#FAF5EB] border-[#eae3d2] text-[#042F1A] shadow-sm font-semibold">
-        <div className="flex items-center justify-between border-b border-[#042F1A]/10 pb-1.5 mb-2">
+      <div className={`mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all shadow-sm font-semibold ${
+        isDarkMode ? "bg-[#02180c] border-[#115e34] text-[#FAF6EE]" : "bg-[#FAF5EB] border-[#b0a487] text-[#042F1A]"
+      }`}>
+        <div className={`flex items-center justify-between border-b pb-1.5 mb-2 ${isDarkMode ? "border-white/10" : "border-[#042F1A]/10"}`}>
           <span className="font-bold text-[#117644]">AI WRITER CLIP: AUTO-PLAYING</span>
           <span className="flex h-1.5 w-1.5 rounded-full bg-[#117644] animate-ping" />
         </div>
         <div className="space-y-1.5">
           <div className="flex items-center gap-1.5 flex-wrap">
             <span className="text-[#117644] font-bold">❯</span>
-            <span className={step === 0 ? "font-bold text-[#117644]" : "text-[#042F1A]"}>{texts[0]}</span>
+            <span className={step === 0 ? "font-bold text-[#117644]" : isDarkMode ? "text-neutral-200" : "text-[#042F1A]"}>{texts[0]}</span>
           </div>
           <div className={`pl-3 border-l-2 transition-all duration-300 ${
-            step >= 1 ? "border-[#117644] text-[#042F1A]" : "border-transparent opacity-25"
+            step >= 1 ? `border-[#117644] ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]"}` : "border-transparent opacity-25"
           }`}>
             {step >= 1 ? texts[1] : "..."}
           </div>
@@ -126,7 +129,7 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
           }`}>
             💡 Keywords matched: [launch, creator, direct]
           </div>
-          <div className={`pt-1 text-right text-[9px] transition-all ${step === 3 ? "text-[#117644] font-bold" : "opacity-45 text-[#042F1A]"}`}>
+          <div className={`pt-1 text-right text-[9px] transition-all ${step === 3 ? "text-[#117644] font-bold" : `opacity-45 ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]"}`}`}>
             {step === 3 ? "✓ Loop restarted" : "Generating optimal draft..."}
           </div>
         </div>
@@ -143,8 +146,10 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
       { name: "LinkedIn", pct: [0, 40, 100, 100] }
     ];
     return (
-      <div className="mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all bg-[#FAF5EB] border-[#eae3d2] text-[#042F1A] shadow-sm font-semibold">
-        <div className="flex items-center justify-between border-b border-[#042F1A]/10 pb-1.5 mb-2">
+      <div className={`mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all shadow-sm font-semibold ${
+        isDarkMode ? "bg-[#02180c] border-[#115e34] text-[#FAF6EE]" : "bg-[#FAF5EB] border-[#b0a487] text-[#042F1A]"
+      }`}>
+        <div className={`flex items-center justify-between border-b pb-1.5 mb-2 ${isDarkMode ? "border-white/10" : "border-[#042F1A]/10"}`}>
           <span className="font-bold text-[#117644]">SYNC SCHEDULER: MULTI-DISPATCH LOOP</span>
           <span className="flex h-1.5 w-1.5 rounded-full bg-[#117644] animate-ping" />
         </div>
@@ -154,14 +159,14 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
             return (
               <div key={p.name} className="space-y-1">
                 <div className="flex justify-between items-center text-[10px]">
-                  <span className="font-bold text-[#042F1A]">{p.name} Router</span>
-                  <span className={progress === 100 ? "text-[#117644] font-bold animate-pulse" : "text-[#02180c] font-black"}>
+                  <span className={`font-bold ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]"}`}>{p.name} Router</span>
+                  <span className={progress === 100 ? "text-[#117644] font-bold animate-pulse" : `${isDarkMode ? "text-[#FAF6EE]" : "text-[#02180c]"} font-black`}>
                     {progress === 100 ? "✓ Synchronized" : `Uploading ${progress}%`}
                   </span>
                 </div>
-                <div className="w-full bg-[#eae3d2] h-2 rounded overflow-hidden">
+                <div className={`w-full h-2 rounded overflow-hidden ${isDarkMode ? "bg-white/10" : "bg-[#b0a487]/40"}`}>
                   <div 
-                    className="bg-[#117644] h-full transition-all duration-500" 
+                    className={`h-full transition-all duration-500 ${isDarkMode ? "bg-[#C5E729]" : "bg-[#117644]"}`} 
                     style={{ width: `${progress}%` }} 
                   />
                 </div>
@@ -182,8 +187,10 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
       "Marketing Blast #4 (8:00 PM)"
     ];
     return (
-      <div className="mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all bg-[#FAF5EB] border-[#eae3d2] text-[#042F1A] shadow-sm font-semibold">
-        <div className="flex items-center justify-between border-b border-[#042F1A]/10 pb-1.5 mb-2">
+      <div className={`mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all shadow-sm font-semibold ${
+        isDarkMode ? "bg-[#02180c] border-[#115e34] text-[#FAF6EE]" : "bg-[#FAF5EB] border-[#b0a487] text-[#042F1A]"
+      }`}>
+        <div className={`flex items-center justify-between border-b pb-1.5 mb-2 ${isDarkMode ? "border-white/10" : "border-[#042F1A]/10"}`}>
           <span className="font-bold text-[#117644]">CALENDAR PREVIEW GRID</span>
           <span className="flex h-1.5 w-1.5 rounded-full bg-[#117644] animate-ping" />
         </div>
@@ -196,14 +203,14 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
                 className={`p-1.5 rounded-xl border text-center transition-all ${
                   active 
                     ? "bg-[#117644]/10 border-[#117644] text-[#117644] scale-[1.04] font-black" 
-                    : "bg-[#042F1A]/5 border-transparent text-[#042F1A] font-bold"
+                    : `bg-[#042F1A]/5 border-transparent font-bold ${isDarkMode ? "text-neutral-300 bg-white/5" : "text-[#042F1A]"}`
                 }`}
               >
                 <div className="text-[9px] font-bold underline">{day}</div>
                 <div className="text-[8px] truncate mt-1">
                   {posts[idx]}
                 </div>
-                <div className={`text-[7px] mt-0.5 font-black ${active ? "animate-pulse text-[#117644]" : "text-[#042F1A]/75"}`}>
+                <div className={`text-[7px] mt-0.5 font-black ${active ? "animate-pulse text-[#117644]" : isDarkMode ? "text-neutral-400" : "text-[#042F1A]/75"}`}>
                   {active ? "● DISPATCH" : "Queued"}
                 </div>
               </div>
@@ -223,29 +230,31 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
     ];
     const hours = ["Mon", "Tue", "Wed", "Thu"];
     return (
-      <div className="mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all bg-[#FAF5EB] border-[#eae3d2] text-[#042F1A] shadow-sm font-semibold">
-        <div className="flex items-center justify-between border-b border-[#042F1A]/10 pb-1.5 mb-2">
+      <div className={`mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all shadow-sm font-semibold ${
+        isDarkMode ? "bg-[#02180c] border-[#115e34] text-[#FAF6EE]" : "bg-[#FAF5EB] border-[#b0a487] text-[#042F1A]"
+      }`}>
+        <div className={`flex items-center justify-between border-b pb-1.5 mb-2 ${isDarkMode ? "border-white/10" : "border-[#042F1A]/10"}`}>
           <span className="font-bold text-[#117644]">OPTIMAL ENGAGEMENT FLOWS</span>
           <span className="flex h-1.5 w-1.5 rounded-full bg-[#117644] animate-ping" />
         </div>
         <div className="space-y-2">
-          <div className="flex font-bold justify-between items-end h-16 pt-2 border-b border-[#042F1A]/10">
+          <div className={`flex font-bold justify-between items-end h-16 pt-2 border-b ${isDarkMode ? "border-white/10" : "border-[#042F1A]/10"}`}>
             {hours.map((hour, hIdx) => {
               const currentVal = valueMap[step][hIdx];
               return (
                 <div key={hour} className="flex flex-col items-center w-full">
                   <div 
-                    className="w-4 bg-[#117644] rounded-t transition-all duration-700" 
+                    className={`w-4 rounded-t transition-all duration-700 ${isDarkMode ? "bg-[#C5E729]" : "bg-[#117644]"}`} 
                     style={{ height: `${currentVal}%` }} 
                   />
-                  <span className="text-[7px] mt-1 text-[#042F1A] font-bold">{hour}</span>
+                  <span className={`text-[7px] mt-1 font-bold ${isDarkMode ? "text-[#FAF6EE]" : "text-[#042F1A]"}`}>{hour}</span>
                 </div>
               );
             })}
           </div>
           <div className="text-[9px] flex justify-between">
             <span className="text-[#117644] font-bold">Peak Engagement Active 🔥</span>
-            <span className="text-[#042F1A] font-extrabold">Yield: +210% Reach</span>
+            <span className={`font-extrabold ${isDarkMode ? "text-white" : "text-[#042F1A]"}`}>Yield: +210% Reach</span>
           </div>
         </div>
       </div>
@@ -254,28 +263,32 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
 
   const prompts = [
     'A minimalist organic tech device mockup, high-end studio lighting',
-    'Generating with Trend Wave Image Engine...',
+    'Generating with Postrick Image Engine...',
     'Rendering creative design layers...',
     'Creative draft image generated (1200ms)!'
   ];
   return (
-    <div className="mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all bg-[#FAF5EB] border-[#eae3d2] text-[#042F1A] shadow-sm font-semibold animate-none">
-      <div className="flex items-center justify-between border-b border-[#042F1A]/10 pb-1.5 mb-2">
+    <div className={`mt-4 p-4 rounded-2xl border font-mono text-[11px] leading-relaxed transition-all shadow-sm font-semibold animate-none ${
+      isDarkMode ? "bg-[#02180c] border-[#115e34] text-[#FAF6EE]" : "bg-[#FAF5EB] border-[#b0a487] text-[#042F1A]"
+    }`}>
+      <div className={`flex items-center justify-between border-b pb-1.5 mb-2 ${isDarkMode ? "border-white/10" : "border-[#042F1A]/10"}`}>
         <span className="font-bold text-[#117644]">AI IMAGE GENERATOR SIMULATOR</span>
         <span className="flex h-1.5 w-1.5 rounded-full bg-[#117644] animate-ping" />
       </div>
       <div className="space-y-1.5">
         <div className="flex items-center gap-1.5">
           <span className="text-[#117644] font-bold">❯</span>
-          <span className={step <= 1 ? "text-[#02180c] font-black" : "text-[#117644] font-black"}>
+          <span className={step <= 1 ? `${isDarkMode ? "text-white" : "text-[#02180c]"} font-black` : "text-[#117644] font-black"}>
             {step === 0 ? prompts[0] : step === 1 ? prompts[1] : step === 2 ? prompts[2] : prompts[3]}
           </span>
         </div>
         <div className={`flex justify-center items-center h-24 rounded-xl border relative overflow-hidden transition-all duration-500 ${
-          step >= 2 ? "bg-transparent border-[#117644]" : "bg-[#FAF5EB] border-[#eae3d2]"
+          step >= 2 
+            ? "bg-transparent border-[#117644]" 
+            : isDarkMode ? "bg-[#031d10] border-[#115e34]" : "bg-[#FAF5EB] border-[#b0a487]"
         }`}>
           {step <= 1 ? (
-            <div className="flex items-center gap-2 text-[#02180c] text-[10px] font-black">
+            <div className={`flex items-center gap-2 text-[10px] font-black ${isDarkMode ? "text-[#FAF6EE]" : "text-[#02180c]"}`}>
               <Loader2 className="w-3.5 h-3.5 animate-spin text-[#117644]" />
               <span>Synthesizing creative vectors...</span>
             </div>
@@ -295,7 +308,7 @@ function FeatureSimulation({ id, isDarkMode }: { id: string; isDarkMode: boolean
 
 function ChatbotBox({ isDarkMode }: { isDarkMode: boolean }) {
   const [messages, setMessages] = useState<Array<{ role: "user" | "assistant"; content: string }>>([
-    { role: "assistant", content: "Hi! I am the Trend Wave Assistant helper. Ask me anything about our Lifetime / Forever Free tier, or how we can get started!" }
+    { role: "assistant", content: "Hi! I am the Postrick Assistant helper. Ask me anything about our Lifetime / Forever Free tier, or how we can get started!" }
   ]);
   const [inputVal, setInputVal] = useState("");
   const [isSending, setIsSending] = useState(false);
@@ -374,7 +387,7 @@ function ChatbotBox({ isDarkMode }: { isDarkMode: boolean }) {
           type="text"
           value={inputVal}
           onChange={e => setInputVal(e.target.value)}
-          placeholder="Ask a question about Trend Wave..."
+          placeholder="Ask a question about Postrick..."
           className={`flex-1 text-xs px-3 py-2 rounded-lg focus:outline-none border ${
             isDarkMode 
               ? "bg-neutral-900 border-neutral-800 focus:border-neutral-700 text-white placeholder-neutral-500" 
@@ -538,16 +551,14 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
             
             {/* Logo */}
             <div className="flex items-center gap-1.5 sm:gap-2 cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-              <span className="flex-shrink-0 flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-full font-serif font-black italic text-[11px] sm:text-xs border bg-[#042F1A] text-[#FAF6EE] border-[#042F1A]">
-                T
-              </span>
-              <span className="font-serif font-black tracking-tight text-lg sm:text-2xl italic text-[#02180c]">
-                Trend Wave<span className="text-[10px] font-sans not-italic font-bold align-super">®</span>
+              <PostrickLogo className="w-8 h-8 sm:w-9 sm:h-9 flex-shrink-0" color={isDarkMode ? "#C5E729" : "#1E3216"} bgStrokeColor={isDarkMode ? "#032011" : "#FAF6EE"} />
+              <span className={`font-serif font-black tracking-tight text-lg sm:text-2xl italic ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>
+                Postrick<span className="text-[10px] font-sans not-italic font-bold align-super">®</span>
               </span>
             </div>
 
             {/* Desktop Links */}
-            <nav className="hidden md:flex items-center gap-8 text-xs font-black uppercase tracking-widest text-[#042F1A]">
+            <nav className={`hidden md:flex items-center gap-8 text-xs font-black uppercase tracking-widest ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]"}`}>
               <a href="/features" className="hover:text-[#117644] transition-colors pb-1 border-b-2 border-transparent hover:border-[#117644]">Features</a>
               
               {/* Desktop Integrations Dropdown triggered strictly on tap/click */}
@@ -566,11 +577,11 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                 </button>
                 
                 {isIntegrationsOpen && (
-                  <div className="absolute top-[22px] left-1/2 -translate-x-1/2 mt-2 w-64 glass-modal rounded-2xl shadow-xl p-4 z-50 text-left normal-case tracking-normal">
+                  <div className={`absolute top-[22px] left-1/2 -translate-x-1/2 mt-2 w-64 rounded-2xl shadow-xl p-4 z-50 text-left normal-case tracking-normal border ${isDarkMode ? "bg-neutral-950 border-neutral-800 text-white" : "glass-modal"}`}>
                     <p className="text-[10px] font-mono font-extrabold text-[#117644] uppercase tracking-wider mb-2.5">
                       6 Connected Platforms
                     </p>
-                    <div className="grid grid-cols-2 gap-2 text-[11px] font-bold text-[#042F1A]">
+                    <div className={`grid grid-cols-2 gap-2 text-[11px] font-bold ${isDarkMode ? "text-neutral-100" : "text-[#042F1A]"}`}>
                       <div className="flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#FAF5EB] transition-colors"><Youtube className="w-3.5 h-3.5 text-red-500" /> YouTube</div>
                       <div className="flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#FAF5EB] transition-colors"><Facebook className="w-3.5 h-3.5 text-blue-600" /> Facebook</div>
                       <div className="flex items-center gap-1.5 p-1.5 rounded-lg hover:bg-[#FAF5EB] transition-colors"><Instagram className="w-3.5 h-3.5 text-pink-500" /> Instagram</div>
@@ -630,18 +641,18 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
             animate={{ opacity: 1, height: "auto" }}
             exit={{ opacity: 0, height: 0 }}
             className={`md:hidden border-b overflow-hidden font-bold text-xs ${
-              isDarkMode ? "bg-[#032011] border-[#083e22]" : "bg-[#FAF6EE] border-[#eae3d2]"
+              isDarkMode ? "bg-[#032011] border-[#115e34]" : "bg-[#FAF6EE] border-[#b0a487]"
             }`}
           >
-            <div className="px-4 py-5 space-y-3.5 flex flex-col font-black uppercase tracking-widest text-[#042F1A]">
+            <div className={`px-4 py-5 space-y-3.5 flex flex-col font-black uppercase tracking-widest ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]"}`}>
               <a href="/features" onClick={() => setMobileMenuOpen(false)} className="py-1 hover:text-[#117644]">Features</a>
               
               {/* Integrations option showing channels ONLY after being tapped (clicked) */}
-              <div className="py-1 border-t border-b border-[#eae3d2]/60 my-1 py-1.5">
+              <div className="py-1 border-t border-b border-[#b0a487]/60 my-1 py-1.5">
                 <button
                   type="button"
                   onClick={() => setIsMobIntegrationsOpen(!isMobIntegrationsOpen)}
-                  className="w-full flex items-center justify-between text-[11px] font-black tracking-widest text-[#042F1A] hover:text-[#117644] text-left uppercase py-1.5 focus:outline-none cursor-pointer"
+                  className={`w-full flex items-center justify-between text-[11px] font-black tracking-widest hover:text-[#117644] text-left uppercase py-1.5 focus:outline-none cursor-pointer ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]"}`}
                 >
                   <span className="flex items-center gap-1.5">
                     Integrations
@@ -652,7 +663,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                   <motion.div 
                     initial={{ opacity: 0, height: 0 }}
                     animate={{ opacity: 1, height: "auto" }}
-                    className="grid grid-cols-2 gap-2 mt-2 px-1 text-[10px] text-[#042F1A] font-bold tracking-normal normal-case"
+                    className={`grid grid-cols-2 gap-2 mt-2 px-1 text-[10px] font-bold tracking-normal normal-case ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]"}`}
                   >
                     <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-[#FAF5EB]/50"><Youtube className="w-3.5 h-3.5 text-red-500" /> YouTube</div>
                     <div className="flex items-center gap-1.5 p-1.5 rounded-lg bg-[#FAF5EB]/50"><Facebook className="w-3.5 h-3.5 text-blue-600" /> Facebook</div>
@@ -682,7 +693,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
 
       {/* ACTIVE PLATFORMS VISUAL BAR */}
       <div className={`border-b py-3.5 font-mono text-[9px] tracking-widest relative z-20 overflow-hidden ${
-        isDarkMode ? "bg-[#02180c] border-[#083e22]" : "bg-[#FAF5EB]/80 border-[#eae3d1]"
+        isDarkMode ? "bg-[#02180c] border-[#115e34]" : "bg-[#FAF5EB]/80 border-[#b0a487]"
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col lg:flex-row items-center justify-between gap-3 text-center lg:text-left">
           <div className="flex items-center gap-2">
@@ -709,7 +720,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                 onClick={onEnterApp}
               >
                 <span className="group-hover:rotate-12 transition-transform duration-300">{p.icon}</span>
-                <span className="font-extrabold text-[#052414] dark:text-[#FAF6EE] opacity-90 group-hover:opacity-100 transition-opacity">
+                <span className={`font-extrabold opacity-90 group-hover:opacity-100 transition-opacity ${isDarkMode ? "text-white" : "text-[#052414]"}`}>
                   {p.name}
                 </span>
                 <span className="opacity-40 text-[7px] bg-emerald-500/10 px-1 py-0.5 rounded font-mono hidden md:inline">
@@ -732,7 +743,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4 }}
               className={`space-x-2 inline-flex items-center px-4 py-1.5 rounded-full border text-[10px] font-mono tracking-widest uppercase font-bold ${
-                isDarkMode ? "bg-[#042813] border-[#083a1e] text-[#C5E729]" : "bg-white border-[#eae3d2] text-[#042F1A] shadow-sm"
+                isDarkMode ? "bg-[#042813] border-[#115e34] text-[#C5E729]" : "bg-white border-[#b0a487] text-[#042F1A] shadow-sm"
               }`}
             >
               <span className="flex h-1.5 w-1.5 rounded-full bg-[#117644] dark:bg-[#C5E729] animate-ping" />
@@ -743,10 +754,10 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="font-serif text-3xl sm:text-6xl md:text-7xl font-semibold tracking-tight text-[#042F1A] dark:text-[#FAF6EE] leading-[1.1] max-w-4xl text-center"
+              className="font-serif text-4xl sm:text-6xl md:text-7.5xl font-extrabold tracking-tight text-[#042F1A] dark:text-[#FAF6EE] leading-[1.08] max-w-4xl text-center"
             >
               The World&apos;s Leading <br/>
-              <span className="font-serif italic font-medium text-[#117644] dark:text-[#C5E729] block mt-1">
+              <span className="font-serif italic font-medium text-[#117644] dark:text-[#C5E729] block mt-1.5">
                 Social Multi-Publishing Tool
               </span>
             </motion.h1>
@@ -755,7 +766,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-xs sm:text-base max-w-2xl leading-relaxed text-[#042F1A] font-bold px-2"
+              className="text-sm sm:text-[17px] max-w-2xl leading-relaxed text-black dark:text-black font-extrabold px-2 mt-4"
             >
               Automate multi-platform scheduling based on customer behavior. Reach the right subscribers on YouTube, Instagram, Facebook, and TikTok with high-impact precision campaigns.
             </motion.p>
@@ -790,14 +801,14 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
 
       {/* Features Grid Area */}
       <section id="features" className={`py-28 border-t transition-colors relative ${
-        isDarkMode ? "bg-[#02180a] border-[#083e22]" : "bg-[#FAF5EB]/50 border-[#eae3d1]"
+        isDarkMode ? "bg-[#02180a] border-[#115e34]" : "bg-[#FAF5EB]/50 border-[#b0a487]"
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
-            <span className="text-xs uppercase tracking-widest font-mono text-[#042F1A] font-black block">PRECISION CONTROLS</span>
-            <h2 className="font-serif text-4xl sm:text-5xl font-black tracking-tight text-[#02180c]">Everything you need to scale multiple pages</h2>
-            <p className="text-sm leading-relaxed max-w-2xl mx-auto text-[#042F1A] font-bold">
+          <div className="text-center max-w-3xl mx-auto space-y-3.5 mb-20">
+            <span className="text-xs uppercase tracking-[0.18em] font-mono text-[#117644] font-bold block mb-1">PRECISION CONTROLS</span>
+            <h2 className={`font-serif text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>Everything you need to scale multiple pages</h2>
+            <p className={`text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
               Ditch the scattered tabs and chaotic notes. Restructure your social engine with standard industrial capabilities engineered for modern teams.
             </p>
           </div>
@@ -813,7 +824,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                 whileHover={{ y: -6, scale: 1.02 }}
                 className={`p-6 rounded-3xl border flex flex-col justify-between transition-all group ${
                   isDarkMode 
-                    ? "bg-[#031d10]/75 backdrop-blur-md border-[#083e22]/50 hover:bg-[#042514]/90 hover:border-[#083e22] shadow-xs" 
+                    ? "bg-[#031d10]/75 backdrop-blur-md border-[#115e34]/50 hover:bg-[#042514]/90 hover:border-[#115e34] shadow-xs" 
                     : "glass-card glass-card-hover"
                 }`}
               >
@@ -824,14 +835,14 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                     }`}>
                       {feat.icon}
                     </span>
-                    <span className="text-[9px] font-mono font-black tracking-widest bg-[#042F1A]/10 text-[#042F1A] px-3 py-1 rounded-full uppercase">
+                    <span className={`text-[9px] font-mono font-black tracking-widest px-3 py-1 rounded-full uppercase ${isDarkMode ? "bg-white/10 text-[#C5E729]" : "bg-[#042F1A]/10 text-[#042F1A]"}`}>
                       {feat.badge}
                     </span>
                   </div>
 
-                  <div className="space-y-1.5">
-                    <h3 className="font-serif text-xl font-black text-[#02180c]">{feat.title}</h3>
-                    <p className="text-xs leading-relaxed text-[#042F1A] font-bold">
+                  <div className="space-y-2">
+                    <h3 className={`font-serif text-lg sm:text-xl font-bold tracking-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>{feat.title}</h3>
+                    <p className={`text-[13px] leading-relaxed font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/75"}`}>
                       {feat.desc}
                     </p>
                   </div>
@@ -850,7 +861,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                 <FeatureSimulation id={feat.id} isDarkMode={isDarkMode} />
 
                 {/* Custom CTA Action Button mapped directly to user specs */}
-                <div className="mt-5 pt-3 border-t border-[#eae3d2]/40">
+                <div className="mt-5 pt-3 border-t border-[#b0a487]/50">
                   <button
                     onClick={() => {
                       triggerConfetti();
@@ -876,20 +887,22 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
       </section>
 
       {/* HOW IT WORKS SECTION */}
-      <section id="how-it-works" className="py-24 border-t transition-colors relative bg-[#FAF6EE] border-[#eae3d2] text-[#042F1A]">
+      <section id="how-it-works" className={`py-24 border-t transition-colors relative ${
+        isDarkMode ? "bg-[#032011] border-[#115e34] text-[#FAF6EE]" : "bg-[#FAF6EE] border-[#b0a487] text-[#042F1A]"
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-20 animate-fadeIn">
-            <span className="text-xs uppercase tracking-widest font-mono text-[#117644] font-black block">THE TREND PIPELINE</span>
-            <h2 className="font-serif text-4xl sm:text-5xl font-black tracking-tight text-[#042F1A] mb-2">How Trend Wave Works</h2>
-            <p className="text-sm leading-relaxed max-w-2xl mx-auto text-[#042F1A]/80 font-semibold">
+          <div className="text-center max-w-3xl mx-auto space-y-3.5 mb-20 animate-fadeIn">
+            <span className="text-xs uppercase tracking-[0.18em] font-mono text-[#117644] font-bold block mb-1">THE TREND PIPELINE</span>
+            <h2 className={`font-serif text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight mb-2 ${isDarkMode ? "text-white" : "text-[#042F1A]"}`}>How Postrick Works</h2>
+            <p className={`text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
               Scale your entire social media engine dynamically across multiple channels in four seamless steps.
             </p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 relative lg:px-6">
             {/* Draw a subtle connector line between steps on large screens */}
-            <div className="hidden lg:block absolute top-[48px] left-[15%] right-[15%] h-[2px] bg-[#117644]/20 z-0" />
+            <div className={`hidden lg:block absolute top-[48px] left-[15%] right-[15%] h-[2px] z-0 ${isDarkMode ? "bg-[#C5E729]/30" : "bg-[#117644]/20"}`} />
             
             {[
               {
@@ -930,11 +943,11 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                   {step.num}
                 </div>
 
-                <div className="space-y-3.5 px-2">
-                  <h3 className="font-serif text-2xl font-black text-[#042F1A] group-hover:text-[#117644] transition-colors">
+                <div className="space-y-2 px-2">
+                  <h3 className={`font-serif text-xl font-bold tracking-tight group-hover:text-[#117644] transition-colors ${isDarkMode ? "text-white" : "text-[#042F1A]"}`}>
                     {step.title}
                   </h3>
-                  <p className="text-xs leading-relaxed text-[#042F1A]/80 font-semibold max-w-[260px] mx-auto">
+                  <p className={`text-[13px] leading-relaxed font-normal max-w-[260px] mx-auto ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/75"}`}>
                     {step.desc}
                   </p>
                 </div>
@@ -946,17 +959,19 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
       </section>
 
       {/* 2. PERSUASIVE BEFORE & AFTER COMPARISON INTERACTIVE DYNAMIC TABLE */}
-      <section id="comparison" className="py-24 border-t border-[#eae3d2] bg-[#FAF5EB]/50 relative overflow-hidden">
+      <section id="comparison" className={`py-24 border-t relative overflow-hidden transition-colors ${
+        isDarkMode ? "bg-[#02180a] border-[#115e34]" : "bg-[#FAF5EB]/50 border-[#b0a487]"
+      }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-            <span className="text-xs uppercase tracking-widest font-mono text-[#042F1A] font-black block">
+          <div className="text-center max-w-3xl mx-auto space-y-3.5 mb-16">
+            <span className="text-xs uppercase tracking-[0.18em] font-mono text-[#117644] font-bold block mb-1">
               SAVINGS DIAGNOSTIC MATRIX
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-black tracking-tight text-[#02180c]">
-              Review What Happens Before &amp; After Trend Wave
+            <h2 className={`font-serif text-3xl sm:text-4xl font-black tracking-tight leading-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>
+              Review What Happens Before &amp; After Postrick
             </h2>
-            <p className="text-sm leading-relaxed max-w-2xl mx-auto text-[#042F1A] font-bold">
+            <p className={`text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
               Analyze the manual social media workflow strain against our unified automated alternative.
             </p>
           </div>
@@ -967,13 +982,19 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true, margin: "-50px" }}
             transition={{ duration: 0.5 }}
-            className="rounded-2xl border border-[#eae3d2] overflow-hidden mt-6 shadow-xl bg-white"
+            className={`rounded-2xl border overflow-hidden mt-6 shadow-xl transition-all ${
+              isDarkMode ? "border-[#115e34] bg-[#031d10]" : "border-[#b0a487] bg-white"
+            }`}
           >
-            <div className="p-5 border-b border-[#eae3d2] flex items-center justify-between bg-[#FAF5EB]">
-              <span className="font-mono text-[10px] uppercase tracking-wider font-extrabold text-[#042F1A]">
+            <div className={`p-5 border-b flex items-center justify-between transition-colors ${
+              isDarkMode ? "border-[#115e34] bg-[#02180c]" : "border-[#b0a487] bg-[#FAF5EB]"
+            }`}>
+              <span className={`font-mono text-[10px] uppercase tracking-wider font-extrabold ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]"}`}>
                 Performance Audit Matrix &amp; Comparison
               </span>
-              <span className="text-[10px] bg-[#042F1A]/10 text-[#042F1A] font-black px-2 py-0.5 rounded font-mono">
+              <span className={`text-[10px] font-black px-2 py-0.5 rounded font-mono ${
+                isDarkMode ? "bg-white/10 text-[#C5E729]" : "bg-[#042F1A]/10 text-[#042F1A]"
+              }`}>
                 95% Efficiency Boost
               </span>
             </div>
@@ -981,13 +1002,17 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse text-xs">
                 <thead>
-                  <tr className="border-b border-[#eae3d2] font-mono uppercase text-[9px] tracking-wider text-[#042F1A] bg-[#FAF5EB]/50">
-                    <th className="p-4 sm:p-5 font-black w-[25%] text-[#02180c]">CAPABILITY</th>
-                    <th className="p-4 sm:p-5 font-black w-[37%] text-red-955 bg-red-500/5">✕ OLD MANUAL ROUTINE</th>
-                    <th className="p-4 sm:p-5 font-black w-[38%] text-[#02180c] bg-emerald-500/5">✓ THE AUTOMATED FLOW</th>
+                  <tr className={`border-b font-mono uppercase text-[9px] tracking-wider transition-colors ${
+                    isDarkMode 
+                      ? "border-[#115e34] text-neutral-300 bg-[#02180c]/50" 
+                      : "border-[#b0a487] text-[#042F1A] bg-[#FAF5EB]/50"
+                  }`}>
+                    <th className={`p-4 sm:p-5 font-black w-[25%] ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>CAPABILITY</th>
+                    <th className="p-4 sm:p-5 font-black w-[37%] text-red-650 dark:text-red-400 bg-red-500/5">✕ OLD MANUAL ROUTINE</th>
+                    <th className={`p-4 sm:p-5 font-black w-[38%] bg-emerald-500/5 ${isDarkMode ? "text-[#C5E729]" : "text-[#02180c]"}`}>✓ THE AUTOMATED FLOW</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-[#eae3d2]">
+                <tbody className={`divide-y ${isDarkMode ? "divide-[#115e34]" : "divide-[#b0a487]"}`}>
                   {[
                     {
                       cap: "Post Distribution",
@@ -1020,29 +1045,35 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                   ].map((row, idx) => (
                     <tr 
                       key={idx} 
-                      className="hover:bg-[#FAF5EB]/40 transition-all duration-200 border-b border-[#eae3d2]"
+                      className={`transition-all duration-200 border-b ${
+                        isDarkMode 
+                          ? "hover:bg-white/5 border-[#083e22]" 
+                          : "hover:bg-[#FAF5EB]/40 border-[#eae3d2]"
+                      }`}
                     >
-                      <td className="p-4 sm:p-5 font-bold text-[#02180c] bg-transparent">
+                      <td className={`p-4 sm:p-5 font-medium bg-transparent ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>
                         <div className="space-y-1.5">
                           <div className="flex items-center gap-1.5">
                             {row.icon}
-                            <span className="font-serif text-xs tracking-tight font-black text-[#02180c]">{row.cap}</span>
+                            <span className={`font-serif text-sm tracking-tight font-bold ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>{row.cap}</span>
                           </div>
-                          <span className="inline-block text-[8px] font-mono tracking-widest bg-[#042F1A]/10 text-[#042F1A] px-2 py-0.5 rounded font-black">
+                          <span className={`inline-block text-[8px] font-mono tracking-[0.12em] px-2 py-0.5 rounded font-bold ${
+                            isDarkMode ? "bg-white/10 text-[#C5E729]" : "bg-[#042F1A]/10 text-[#042F1A]"
+                          }`}>
                             {row.metric}
                           </span>
                         </div>
                       </td>
-                      <td className="p-4 sm:p-5 text-red-950 bg-red-500/5 leading-relaxed text-xs font-semibold">
+                      <td className={`p-4 sm:p-5 bg-red-500/5 leading-relaxed text-[13px] font-normal ${isDarkMode ? "text-neutral-300" : "text-stone-600"}`}>
                         <div className="flex items-start gap-1.5">
-                          <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-red-100 text-red-800 font-extrabold font-mono text-[9px] mt-0.5">✕</span>
+                          <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-red-50/70 border border-red-200 text-red-600 font-extrabold font-mono text-[9px] mt-0.5">✕</span>
                           <span>{row.manual}</span>
                         </div>
                       </td>
-                      <td className="p-4 sm:p-5 text-[#02180c] bg-emerald-500/5 font-black leading-relaxed text-xs">
-                        <div className="flex items-start gap-1.5 text-[#042F1A]">
-                          <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-emerald-100 text-[#117644] font-extrabold font-mono text-[9px] mt-0.5">✓</span>
-                          <span>{row.savvy}</span>
+                      <td className={`p-4 sm:p-5 bg-emerald-500/5 font-medium leading-relaxed text-[13px] ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]/90"}`}>
+                        <div className={`flex items-start gap-1.5 ${isDarkMode ? "text-[#C5E729]" : "text-[#042F1A]"}`}>
+                          <span className="inline-flex items-center justify-center shrink-0 w-4 h-4 rounded-full bg-emerald-50/70 border border-emerald-200 text-[#117644] font-extrabold font-mono text-[9px] mt-0.5">✓</span>
+                          <span className="font-medium">{row.savvy}</span>
                         </div>
                       </td>
                     </tr>
@@ -1057,7 +1088,11 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
             <motion.div
               whileHover={{ scale: 1.02 }}
               onClick={onEnterApp}
-              className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-6 py-3 rounded-xl border border-[#eae3d2] bg-white text-xs cursor-pointer text-[#02180c] font-bold shadow-sm"
+              className={`inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-3 px-6 py-3 rounded-xl border text-xs cursor-pointer font-bold shadow-sm transition-all ${
+                isDarkMode 
+                  ? "border-[#083e22] bg-[#031d10] text-white hover:bg-[#042514]" 
+                  : "border-[#eae3d2] bg-white text-[#02180c] hover:bg-neutral-50"
+              }`}
             >
               <span className="font-black decoration-2 underline text-[#117644]">Stop wasting precious growth hours.</span>
               <span>Connect your social accounts and dispatch updates concurrently on our Free tier today!</span>
@@ -1085,17 +1120,17 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
           <div className="flex flex-wrap justify-center items-center gap-6 max-w-2xl mx-auto pt-3">
             {[
               { name: "YouTube", desc: "Video Reels Sync", icon: <Youtube className="w-5 h-5 text-red-500" /> },
-              { name: "Facebook", desc: "Group Pages post", icon: <Facebook className="w-5 h-5 text-blue-650" /> },
-              { name: "Instagram", desc: "Aspect preview", icon: <Instagram className="w-5 h-5 text-pink-550" /> },
+              { name: "Facebook", desc: "Group Pages post", icon: <Facebook className="w-5 h-5 text-blue-600" /> },
+              { name: "Instagram", desc: "Aspect preview", icon: <Instagram className="w-5 h-5 text-pink-500" /> },
               { name: "TikTok", desc: "Short video Sync", icon: <TikTokIcon className="w-5 h-5 text-neutral-800 dark:text-white" /> },
-              { name: "Pinterest", desc: "Rich Pin boards", icon: <PinterestIcon className="w-5 h-5 text-red-650" /> },
+              { name: "Pinterest", desc: "Rich Pin boards", icon: <PinterestIcon className="w-5 h-5 text-red-600" /> },
               { name: "LinkedIn", desc: "Professional Feed", icon: <Linkedin className="w-5 h-5 text-blue-500" /> }
             ].map((plat) => (
               <motion.div
                 key={plat.name}
                 whileHover={{ y: -4, scale: 1.05 }}
                 className={`p-3.5 rounded-xl border flex flex-col items-center justify-center text-center gap-2 min-w-[100px] flex-1 ${
-                  isDarkMode ? "bg-neutral-900/60 border-neutral-800 hover:bg-neutral-900" : "bg-white border-neutral-200 hover:shadow-sm"
+                  isDarkMode ? "bg-neutral-900/60 border-[#115e34]/50 hover:bg-neutral-900" : "bg-white border-[#b0a487] hover:shadow-sm"
                 }`}
               >
                 <div className="p-2 rounded-full bg-neutral-500/10 flex items-center justify-center shrink-0">
@@ -1110,20 +1145,29 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
           </div>
         </div>
         
-        <div className="text-center max-w-3xl mx-auto space-y-4 mb-16">
-          <span className="text-xs uppercase tracking-widest font-mono text-[#042F1A] font-black">HONEST PRICING PLANS</span>
-          <h2 className="font-serif text-3xl sm:text-4.5xl font-black tracking-tight text-[#02180c]">One simple pricing, zero billing surprises</h2>
-          <p className="text-sm max-w-md mx-auto text-[#042F1A] font-bold">
+        <div className="text-center max-w-3xl mx-auto space-y-3.5 mb-16">
+          <span className="text-xs uppercase tracking-[0.18em] font-mono text-[#117644] font-bold block mb-1">HONEST PRICING PLANS</span>
+          <h2 className={`font-serif text-3xl sm:text-4.5xl font-black tracking-tight leading-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>One simple pricing, zero billing surprises</h2>
+          <p className={`text-sm sm:text-base leading-relaxed max-w-md mx-auto font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
             Banish locked models. Start entirely free of charge and update only when your social multi-posting demand scales.
           </p>
 
           {/* Billing Switcher */}
-          <div className="pt-4 flex items-center justify-center gap-3 text-xs font-semibold">
-            <span className={billingPeriod === "monthly" ? "text-neutral-900 dark:text-neutral-100" : "opacity-60"}>Monthly Billing</span>
+          <div className="pt-4 flex items-center justify-center gap-4 text-xs font-semibold">
+            <span 
+              onClick={() => setBillingPeriod("monthly")}
+              className={`cursor-pointer transition-all ${
+                billingPeriod === "monthly" 
+                  ? "text-black dark:text-black font-black text-[14px] border-b-2 border-black pb-0.5 opacity-100" 
+                  : "text-black dark:text-black font-extrabold opacity-100 hover:opacity-100 text-[13px]"
+              }`}
+            >
+              Monthly Billing
+            </span>
             <button 
               onClick={() => setBillingPeriod(billingPeriod === "monthly" ? "annually" : "monthly")}
               className={`w-12 h-6 rounded-full p-1 transition-colors relative cursor-pointer ${
-                isDarkMode ? "bg-[#052d19]" : "bg-[#FAF5EB] border border-[#eae3d2]"
+                isDarkMode ? "bg-[#052d19]" : "bg-[#FAF5EB] border border-[#b0a487]"
               }`}
             >
               <div className={`w-4 h-4 rounded-full transition-all transform ${
@@ -1132,7 +1176,14 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                 billingPeriod === "annually" ? "translate-x-6" : ""
               }`} />
             </button>
-            <span className={billingPeriod === "annually" ? "text-[#117644] dark:text-[#C5E729] font-bold" : "opacity-60"}>
+            <span 
+              onClick={() => setBillingPeriod("annually")}
+              className={`cursor-pointer transition-all flex items-center gap-1.5 ${
+                billingPeriod === "annually" 
+                  ? "text-[#117644] dark:text-[#C5E729] font-extrabold text-[13px] border-b-2 border-[#117644] dark:border-[#C5E729] pb-0.5" 
+                  : "text-[#042F1A] dark:text-neutral-300 font-bold opacity-85 hover:opacity-100"
+              }`}
+            >
               Annual Billing <span className="text-[10px] bg-emerald-500/10 text-[#117644] dark:text-[#C5E729] font-bold px-1.5 py-0.5 rounded font-mono">SAVE 20%</span>
             </span>
           </div>
@@ -1154,7 +1205,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                     ? "bg-[#042F1A]/90 backdrop-blur-md border-[#C5E729]/60 shadow-xl" 
                     : "bg-[#FFFFFF]/85 backdrop-blur-md border-[#117644] shadow-xl"
                   : isDarkMode 
-                    ? "bg-[#031d10]/75 backdrop-blur-md border-[#083e22]/50 hover:bg-[#031d10]/95" 
+                    ? "bg-[#031d10]/75 backdrop-blur-md border-[#115e34]/50 hover:bg-[#031d10]/95" 
                     : "glass-card glass-card-hover"
               }`}
             >
@@ -1167,28 +1218,30 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               )}
 
               <div>
-                <h3 className="text-sm font-black font-mono uppercase tracking-widest text-[#042F1A]">{plan.name}</h3>
-                <p className="text-xs mt-1 min-h-12 leading-relaxed text-[#042F1A] font-bold">
+                <h3 className={`text-xs font-bold font-mono uppercase tracking-[0.15em] ${isDarkMode ? "text-[#C5E729]" : "text-[#117644]"}`}>{plan.name}</h3>
+                <p className={`text-[13px] mt-1.5 min-h-12 leading-relaxed font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/75"}`}>
                   {plan.desc}
                 </p>
                 
                 <div className="py-4">
-                  <span className="text-3xl font-serif font-black tracking-tight text-[#02180c]">
+                  <span className={`text-3xl font-serif font-extrabold tracking-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>
                     ${billingPeriod === "monthly" ? plan.monthlyPrice : plan.annualPrice}
                   </span>
-                  <span className="text-[11px] font-mono font-bold text-[#042F1A] opacity-80 ml-1">/ month</span>
-                  <div className="mt-2">
-                    <span className="text-[9px] uppercase font-mono tracking-wider font-extrabold text-[#042F1A] bg-[#042F1A]/10 px-2 py-0.5 rounded">
+                  <span className={`text-[11px] font-mono font-medium ml-1 ${isDarkMode ? "text-neutral-400" : "text-[#042F1A]/70"}`}>/ month</span>
+                  <div className="mt-2.5">
+                    <span className={`text-[9px] uppercase font-mono tracking-[0.1em] font-bold px-2.5 py-0.5 rounded-full ${
+                      isDarkMode ? "bg-white/10 text-[#C5E729]" : "text-[#117644] bg-[#117644]/10"
+                    }`}>
                       {plan.trialLabel}
                     </span>
                   </div>
                 </div>
 
-                <ul className="space-y-3 pt-4 border-t border-[#eae3d2]">
+                <ul className={`space-y-3 pt-4 border-t ${isDarkMode ? "border-white/10" : "border-[#eae3d2]/60"}`}>
                   {plan.features.map((feat) => (
-                    <li key={feat} className="flex items-start gap-2 text-xs">
-                      <Check className="w-4 h-4 text-[#117644] shrink-0 mt-0.5" />
-                      <span className="font-sans text-[#042F1A] font-bold leading-tight">{feat}</span>
+                    <li key={feat} className="flex items-start gap-2.5 text-xs">
+                      <Check className="w-3.5 h-3.5 text-[#117644] shrink-0 mt-0.5" />
+                      <span className={`font-sans font-medium leading-tight ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]/85"}`}>{feat}</span>
                     </li>
                   ))}
                 </ul>
@@ -1221,10 +1274,10 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
         isDarkMode ? "bg-[#031d10] border-[#083e22]" : "bg-white border-[#eae3d1]"
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-3xl mx-auto space-y-4 mb-20">
-            <span className="text-xs uppercase tracking-widest font-mono text-[#042F1A] font-black block">CREATOR TESTIMONIALS</span>
-            <h2 className="font-serif text-4xl sm:text-5xl font-black tracking-tight text-[#02180c]">Verified Reviews from Top Operators</h2>
-            <p className="text-sm leading-relaxed max-w-2xl mx-auto text-[#042F1A] font-bold">
+          <div className="text-center max-w-3xl mx-auto space-y-3.5 mb-20">
+            <span className="text-xs uppercase tracking-[0.18em] font-mono text-[#117644] font-bold block mb-1">CREATOR TESTIMONIALS</span>
+            <h2 className={`font-serif text-3xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>Verified Reviews from Top Operators</h2>
+            <p className={`text-sm sm:text-base leading-relaxed max-w-2xl mx-auto font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
               See what growing brands, digital creators, and professional agency teams say about coordinating and automating their multi-channel social posting schedules.
             </p>
           </div>
@@ -1234,7 +1287,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               {
                 name: "Elena Rostova",
                 role: "Studio Director @ BloomMedia",
-                text: "Trend Wave transformed how our agency handles cross-posting. We used to spend hours copy-pasting posts across Instagram and LinkedIn. Now it takes under 2 minutes.",
+                text: "Postrick transformed how our agency handles cross-posting. We used to spend hours copy-pasting posts across Instagram and LinkedIn. Now it takes under 2 minutes.",
                 avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=150&h=150",
                 stars: 5,
                 tag: "Agency"
@@ -1264,7 +1317,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                 transition={{ duration: 0.4, delay: idx * 0.1 }}
                 whileHover={{ y: -7, scale: 1.03 }}
                 className={`p-6 rounded-3xl border flex flex-col justify-between transition-all ${
-                  isDarkMode ? "bg-[#02180c] border-[#083e22]" : "bg-[#FAF5EB]/50 border-[#eae3d2]"
+                  isDarkMode ? "bg-[#02180c] border-[#115e34]" : "bg-[#FAF5EB]/50 border-[#b0a487]"
                 }`}
               >
                 <div className="space-y-4">
@@ -1274,16 +1327,18 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                         <span key={i} className="text-[#C5E729] text-base">★</span>
                       ))}
                     </div>
-                    <span className="text-[9px] font-mono font-black tracking-widest bg-[#042F1A]/10 text-[#042F1A] px-2.5 py-0.5 rounded-full uppercase">
+                    <span className={`text-[9px] font-mono font-black tracking-widest px-2.5 py-0.5 rounded-full uppercase ${
+                      isDarkMode ? "bg-white/10 text-[#C5E729]" : "bg-[#042F1A]/10 text-[#042F1A]"
+                    }`}>
                       {review.tag}
                     </span>
                   </div>
-                  <p className="text-xs leading-relaxed italic text-[#042F1A] font-bold">
+                  <p className={`text-[13px] leading-relaxed italic font-normal ${isDarkMode ? "text-neutral-200" : "text-[#042F1A]/85"}`}>
                     &ldquo;{review.text}&rdquo;
                   </p>
                 </div>
 
-                <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#eae3d2]/60">
+                <div className={`flex items-center gap-3 mt-6 pt-4 border-t ${isDarkMode ? "border-white/10" : "border-[#b0a487]/60"}`}>
                   <div className="w-10 h-10 rounded-full overflow-hidden border border-[#042F1A]/10 relative">
                     <img
                       src={review.avatar}
@@ -1293,8 +1348,8 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                     />
                   </div>
                   <div>
-                    <h4 className="font-serif text-sm font-black text-[#02180c]">{review.name}</h4>
-                    <p className="text-[10px] text-[#042F1A]/75 font-medium leading-none mt-1">{review.role}</p>
+                    <h4 className={`font-serif text-sm font-bold ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>{review.name}</h4>
+                    <p className={`text-[10px] font-medium leading-none mt-1 ${isDarkMode ? "text-neutral-400" : "text-[#042F1A]/75"}`}>{review.role}</p>
                   </div>
                 </div>
               </motion.div>
@@ -1309,10 +1364,10 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
       }`}>
         <div className="max-w-4xl mx-auto px-4 sm:px-6">
           
-          <div className="text-center space-y-4 mb-20">
-            <span className="text-xs uppercase tracking-widest font-mono text-[#042F1A] font-black block">FAQ BOARD</span>
-            <h2 className="font-serif text-4xl font-black tracking-tight text-[#02180c]">Common answers on your social automated sync</h2>
-            <p className="text-sm leading-relaxed max-w-lg mx-auto text-[#042F1A] font-bold">
+          <div className="text-center space-y-3.5 mb-20">
+            <span className="text-xs uppercase tracking-[0.18em] font-mono text-[#117644] font-bold block mb-1">FAQ BOARD</span>
+            <h2 className={`font-serif text-3xl sm:text-4xl font-black tracking-tight leading-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>Common answers on your social automated sync</h2>
+            <p className={`text-sm leading-relaxed max-w-lg mx-auto font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
               Clear specifications concerning our Lifetime Free plan, platform API limits, and cross-posting security routines.
             </p>
           </div>
@@ -1325,7 +1380,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               },
               {
                 q: "Is cross-platform posting authorized and safe?",
-                a: "Yes. Trend Wave utilizes certified secure API connections for Instagram, YouTube, Facebook, Pinterest, LinkedIn, and TikTok, assuring your personal credentials are fully isolated."
+                a: "Yes. Postrick utilizes certified secure API connections for Instagram, YouTube, Facebook, Pinterest, LinkedIn, and TikTok, assuring your personal credentials are fully isolated."
               },
               {
                 q: "Can I manage separate workgroups as an agency?",
@@ -1340,21 +1395,35 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               return (
                 <div 
                   key={idx} 
-                  className={`rounded-2xl border transition-all duration-200 overflow-hidden bg-white ${
-                    isOpen 
-                      ? "border-[#117644] shadow-md border-2"
-                      : "border-[#eae3d1] hover:border-[#117644] hover:shadow-sm"
+                  className={`rounded-2xl border transition-all duration-200 overflow-hidden ${
+                    isDarkMode 
+                      ? isOpen 
+                        ? "border-[#C5E729] bg-[#031d10] shadow-md border-2" 
+                        : "border-[#115e34] bg-[#031d10]/50 hover:border-[#C5E729]"
+                      : isOpen
+                        ? "border-[#117644] bg-white shadow-md border-2"
+                        : "border-[#b0a487] bg-white hover:border-[#117644] hover:shadow-sm"
                   }`}
                 >
                   <button
                     onClick={() => setOpenFaqIdx(isOpen ? null : idx)}
-                    className="w-full p-5 flex items-center justify-between text-left font-serif cursor-pointer hover:bg-[#FAF5EB]/50 transition-colors"
+                    className={`w-full p-5 flex items-center justify-between text-left font-serif cursor-pointer transition-colors ${
+                      isDarkMode ? "hover:bg-white/5" : "hover:bg-[#FAF5EB]/50"
+                    }`}
                   >
-                    <span className="flex items-center gap-3.5 font-black text-sm text-[#02180c]">
-                      <span className={`text-[10px] font-mono font-black px-2 py-0.5 rounded-full ${isOpen ? "bg-[#117644] text-white" : "bg-[#FAF5EB] text-[#117644]"}`}>Q{idx+1}</span>
+                    <span className={`flex items-center gap-3.5 font-bold text-sm tracking-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>
+                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
+                        isDarkMode 
+                          ? isOpen ? "bg-[#C5E729] text-[#032011]" : "bg-white/10 text-white"
+                          : isOpen ? "bg-[#117644] text-white" : "bg-[#FAF5EB] text-[#117644]"
+                      }`}>Q{idx+1}</span>
                       {item.q}
                     </span>
-                    <span className={`text-xs transition-transform duration-200 ${isOpen ? "rotate-180 text-[#117644] font-black" : "text-[#042F1A] font-black"}`}>
+                    <span className={`text-xs transition-transform duration-200 ${
+                      isOpen 
+                        ? `rotate-180 font-bold ${isDarkMode ? "text-[#C5E729]" : "text-[#117644]"}` 
+                        : `${isDarkMode ? "text-neutral-400" : "text-[#042F1A]"} font-medium`
+                    }`}>
                       ▼
                     </span>
                   </button>
@@ -1367,7 +1436,9 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                         exit={{ height: 0, opacity: 0 }}
                         transition={{ duration: 0.2 }}
                       >
-                        <div className="p-5 pt-0 text-xs leading-relaxed border-t border-[#eae3d2] text-[#042F1A] font-bold font-sans">
+                        <div className={`p-5 pt-0 text-[13px] leading-relaxed border-t font-normal font-sans ${
+                          isDarkMode ? "border-white/10 text-neutral-300" : "border-[#eae3d2]/60 text-[#042F1A]/80"
+                        }`}>
                           {item.a}
                         </div>
                       </motion.div>
@@ -1387,9 +1458,9 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
       }`}>
         <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center space-y-6">
           <div className="space-y-3">
-            <span className="text-xs uppercase tracking-widest font-mono text-[#042F1A] font-black block">TREND ASSISTANT</span>
-            <h2 className="font-serif text-2xl sm:text-3xl font-black tracking-tight text-[#02180c]">For further discussion keep in touch</h2>
-            <p className="text-xs max-w-md mx-auto leading-relaxed text-[#042F1A] font-bold">
+            <span className="text-xs uppercase tracking-[0.18em] font-mono text-[#117644] font-bold block mb-1">TREND ASSISTANT</span>
+            <h2 className={`font-serif text-2xl sm:text-3xl font-black tracking-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>For further discussion keep in touch</h2>
+            <p className={`text-sm leading-relaxed max-w-md mx-auto font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
               Have granular questions about API quotas, premium custom calendars, enterprise integrations, or custom plans? Initiate a chat with our smart helpdesk assistant anytime:
             </p>
           </div>
@@ -1417,12 +1488,12 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
             initial={{ opacity: 0, y: 100, scale: 0.9 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 100, scale: 0.9 }}
-            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-32px)] overflow-hidden rounded-3xl shadow-2xl border border-neutral-200 dark:border-[#083e22] bg-white dark:bg-[#031d10]"
+            className="fixed bottom-6 right-6 z-50 w-[360px] max-w-[calc(100vw-32px)] overflow-hidden rounded-3xl shadow-2xl border border-[#b0a487] dark:border-[#115e34] bg-white dark:bg-[#031d10]"
           >
             <div className="bg-[#042F1A] p-4 text-white flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div className="w-2 h-2 rounded-full bg-[#C5E729] animate-ping" />
-                <span className="font-bold text-xs uppercase tracking-wider font-mono">Trend Wave Helpdesk Chat</span>
+                <span className="font-bold text-xs uppercase tracking-wider font-mono">Postrick Helpdesk Chat</span>
               </div>
               <button 
                 onClick={() => setIsChatOpen(false)}
@@ -1459,14 +1530,14 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
       {/* Hero CTA Section */}
       <section className="py-24 relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
         <div className={`p-10 rounded-3xl border relative overflow-hidden ${
-          isDarkMode ? "bg-[#031d10]/30 border-[#083e22] shadow-2xl" : "bg-white border-[#eae3d2] shadow-sm"
+          isDarkMode ? "bg-[#031d10]/30 border-[#115e34] shadow-2xl" : "bg-white border-[#b0a487] shadow-sm"
         }`}>
           <div className="max-w-2xl mx-auto space-y-6 relative z-10">
-            <span className="text-xs font-mono uppercase tracking-widest text-[#042F1A] font-black">START POSTING TODAY</span>
-            <h2 className="font-serif text-3xl sm:text-4.5xl font-black tracking-tight text-[#02180c]">
+            <span className="text-xs font-mono uppercase tracking-[0.18em] text-[#117644] font-bold block mb-1">START POSTING TODAY</span>
+            <h2 className={`font-serif text-3xl sm:text-4.5xl font-black tracking-tight ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>
               Say goodbye to manual publishing fatigue
             </h2>
-            <p className="text-sm leading-relaxed text-[#042F1A] font-bold">
+            <p className={`text-sm sm:text-base leading-relaxed font-normal max-w-xl mx-auto ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
               Join thousands of creators, publicists, and growing brands already utilizing our tools to schedule schedules on autopilot. Live metrics, zero limits.
             </p>
 
@@ -1479,7 +1550,11 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               </button>
               <button 
                 onClick={onEnterApp}
-                className="w-full sm:w-auto py-3.5 px-6 rounded-full font-black text-xs uppercase tracking-widest border border-[#042F1A] cursor-pointer text-[#042F1A] hover:bg-[#042F1A]/10 transition-colors"
+                className={`w-full sm:w-auto py-3.5 px-6 rounded-full font-black text-xs uppercase tracking-widest border cursor-pointer transition-all ${
+                  isDarkMode 
+                    ? "border-[#FAF6EE] text-[#FAF6EE] hover:bg-white/10" 
+                    : "border-[#042F1A] text-[#042F1A] hover:bg-[#042F1A]/10"
+                }`}
               >
                 Claim Lifetime Free Plan
               </button>
@@ -1490,7 +1565,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
 
       {/* Social Follow-Us Banner */}
       <section className={`py-12 border-t transition-colors ${
-        isDarkMode ? "bg-[#02180c] border-[#083e22]" : "bg-[#FAF5EB]/50 border-[#eae3d1]"
+        isDarkMode ? "bg-[#02180c] border-[#115e34]" : "bg-[#FAF5EB]/50 border-[#b0a487]"
       }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
           <motion.div
@@ -1499,9 +1574,9 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
             transition={{ duration: 0.4 }}
             className="space-y-2"
           >
-            <span className="text-xs uppercase tracking-widest font-mono text-[#042F1A] font-black block">WEEKLY INSIGHTS &amp; ALERTS</span>
-            <h3 className="font-serif text-2xl font-black text-[#02180c]">Follow us on</h3>
-            <p className="text-xs max-w-md mx-auto leading-relaxed text-[#042F1A] font-bold">
+            <span className="text-xs uppercase tracking-[0.18em] font-mono text-[#117644] font-bold block mb-1">WEEKLY INSIGHTS &amp; ALERTS</span>
+            <h3 className={`font-serif text-2xl font-black ${isDarkMode ? "text-white" : "text-[#02180c]"}`}>Follow us on</h3>
+            <p className={`text-sm leading-relaxed max-w-md mx-auto font-normal ${isDarkMode ? "text-neutral-300" : "text-[#042F1A]/80"}`}>
               Stay in the loop with active product updates, growth hacks, live platform metrics tutorials, and coupon alerts.
             </p>
           </motion.div>
@@ -1512,7 +1587,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               { name: "Facebook", icon: <Facebook className="w-5 h-5 text-blue-600" />, href: "#" },
               { name: "Instagram", icon: <Instagram className="w-5 h-5 text-pink-500" />, href: "#" },
               { name: "TikTok", icon: <TikTokIcon className="w-5 h-5 text-[#042F1A] dark:text-white" />, href: "#" },
-              { name: "Pinterest", icon: <PinterestIcon className="w-5 h-5 text-red-650" />, href: "#" },
+              { name: "Pinterest", icon: <PinterestIcon className="w-5 h-5 text-red-600" />, href: "#" },
               { name: "LinkedIn", icon: <Linkedin className="w-5 h-5 text-blue-500" />, href: "#" }
             ].map((p, idx) => (
               <motion.a
@@ -1523,7 +1598,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
                 transition={{ delay: idx * 0.05, type: "spring", stiffness: 180 }}
                 whileHover={{ y: -4, scale: 1.1, backgroundColor: isDarkMode ? "bg-[#031d10]" : "rgba(0,0,0,0.03)" }}
                 className={`p-3.5 rounded-full border flex items-center justify-center transition-colors ${
-                  isDarkMode ? "bg-[#031d10] border-[#083e22] text-[#FAF6EE]" : "bg-white border-[#eae3d2] text-[#042F1A]"
+                  isDarkMode ? "bg-[#031d10] border-[#115e34] text-[#FAF6EE]" : "bg-white border-[#b0a487] text-[#042F1A]"
                 }`}
                 title={`Follow us on ${p.name}`}
               >
@@ -1540,16 +1615,14 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
           
           <div className="col-span-2 space-y-4 text-left">
             <div className="flex items-center gap-2">
-              <span className="flex items-center justify-center w-8 h-8 rounded-full bg-[#C5E729] text-[#032011] font-serif font-black italic text-xs leading-none">
-                T
-              </span>
-              <span className="font-serif font-black tracking-tight text-lg text-white">Trend Wave</span>
+              <PostrickLogo className="w-8 h-8 flex-shrink-0" color="#C5E729" bgStrokeColor="#042F1A" />
+              <span className="font-serif font-black tracking-tight text-lg text-white">Postrick</span>
             </div>
             <p className="max-w-xs leading-relaxed opacity-70">
               Smart isomorphic multi-channel content scheduling cockpit for digital agencies, brand managers, and independent creators worldwide.
             </p>
             <p className="text-[10px] opacity-40 font-mono">
-              © {new Date().getFullYear()} Trend Wave Inc. All registered rights reserved under SLA indexes.
+              © {new Date().getFullYear()} Postrick Inc. All registered rights reserved under SLA indexes.
             </p>
           </div>
 
@@ -1589,6 +1662,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
           <div className="text-left">
             <h4 className="font-mono text-[9px] uppercase tracking-widest mb-4 text-[#C5E729] font-black">General SLA</h4>
             <ul className="space-y-2.5 opacity-80 font-medium">
+              <li><a href="/privacy" className="hover:text-white transition-colors text-[#C5E729] font-bold">Privacy Policy</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Usage Indemnity</a></li>
               <li><a href="#" className="hover:text-white transition-colors">API Boundaries</a></li>
               <li><a href="#" className="hover:text-white transition-colors">Security Protocols</a></li>

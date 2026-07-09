@@ -1,10 +1,11 @@
 // =====================================================================
-// SAVVYGROW AI - SOCIAL MEDIA POSTS & SCHEDULER CRUD API
+// POSTRICK AI - SOCIAL MEDIA POSTS & SCHEDULER CRUD API
 // File: /app/api/posts/route.ts
 // =====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseClient, getSupabaseAdminClient } from "@/lib/supabaseClient";
+import { getAuthenticatedUser, verifyWorkspaceAccess } from "@/lib/security";
 import { z } from "zod";
 
 // Validator Schema for Post Insertion and updates
@@ -29,12 +30,23 @@ const postInputSchema = z.object({
  */
 export async function GET(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const workspaceId = searchParams.get("workspaceId");
     const status = searchParams.get("status");
 
     if (!workspaceId) {
       return NextResponse.json({ error: "Missing parameter: workspaceId is required." }, { status: 400 });
+    }
+
+    // Tenant boundary verification
+    const hasAccess = await verifyWorkspaceAccess(workspaceId, user.userId);
+    if (!hasAccess) {
+      return NextResponse.json({ error: "Forbidden: You do not own this workspace." }, { status: 403 });
     }
 
     const supabase = getSupabaseClient();
@@ -65,6 +77,11 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const body = await req.json();
     const result = postInputSchema.safeParse(body);
 
@@ -73,6 +90,18 @@ export async function POST(req: NextRequest) {
     }
 
     const val = result.data;
+
+    // Cross-user session spoofing protection
+    if (val.userId !== user.userId) {
+      return NextResponse.json({ error: "Forbidden: You cannot create posts for another user." }, { status: 403 });
+    }
+
+    // Tenant boundary verification
+    const hasAccess = await verifyWorkspaceAccess(val.workspaceId, user.userId);
+    if (!hasAccess) {
+      return NextResponse.json({ error: "Forbidden: You do not own this workspace." }, { status: 403 });
+    }
+
     const supabase = getSupabaseAdminClient(); // Use admin client to enable full transaction integrity across multiple tables
 
     // 1. Write the base post record
@@ -142,16 +171,18 @@ export async function POST(req: NextRequest) {
 
     // 5. Update Monthly Usage limitations (enforce premium checks)
     const currentMonth = new Date().toISOString().substring(0, 7);
-    await supabase.rpc("increment_monthly_post_usage", { 
-      p_user_id: val.userId, 
-      p_month: currentMonth 
-    }).catch(() => {
+    try {
+      await supabase.rpc("increment_monthly_post_usage", { 
+        p_user_id: val.userId, 
+        p_month: currentMonth 
+      });
+    } catch {
       // Direct update fallback in case RPC constraint triggers are handled raw inside SQL migrations
-      supabase
+      await supabase
         .from("usage_tracking")
         .update({ posts_count: 1 }) // handled via trigger increments
         .match({ user_id: val.userId, month_year: currentMonth });
-    });
+    }
 
     return NextResponse.json({
       message: "Post compiled successfully!",
@@ -175,6 +206,11 @@ export async function POST(req: NextRequest) {
  */
 export async function DELETE(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const postId = searchParams.get("id");
     const userId = searchParams.get("userId");
@@ -184,6 +220,25 @@ export async function DELETE(req: NextRequest) {
     }
 
     const supabase = getSupabaseAdminClient();
+
+    // Verify post tenancy before deletion
+    const { data: post, error: fetchErr } = await supabase
+      .from("posts")
+      .select("workspace_id")
+      .eq("id", postId)
+      .maybeSingle();
+
+    if (fetchErr) {
+      return NextResponse.json({ error: "Error checking post security: " + fetchErr.message }, { status: 400 });
+    }
+
+    if (post) {
+      const hasAccess = await verifyWorkspaceAccess(post.workspace_id, user.userId);
+      if (!hasAccess) {
+        return NextResponse.json({ error: "Forbidden: You do not own the workspace containing this post." }, { status: 403 });
+      }
+    }
+
     const { error } = await supabase.from("posts").delete().eq("id", postId);
 
     if (error) {
@@ -191,9 +246,9 @@ export async function DELETE(req: NextRequest) {
     }
 
     // Optional: log deletion activities
-    if (userId) {
+    if (userId === user.userId) {
       await supabase.from("activity_logs").insert({
-        user_id: userId,
+        user_id: user.userId,
         action: "post_deleted",
         details: { post_id: postId }
       });

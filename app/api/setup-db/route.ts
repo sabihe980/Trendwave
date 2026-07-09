@@ -1,5 +1,5 @@
 // =====================================================================
-// TREND WAVE - SUPABASE AUTOMATED DATABASE SETUP & MIGRATIONS
+// POSTRICK - SUPABASE AUTOMATED DATABASE SETUP & MIGRATIONS
 // File: /app/api/setup-db/route.ts
 // =====================================================================
 
@@ -12,6 +12,18 @@ export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => ({}));
     const { dbPassword, connectionString } = body;
+
+    // Secure administrative boundary: Require the SUPABASE_SERVICE_ROLE_KEY as authorization in production
+    const adminSecret = req.headers.get("x-admin-secret") || req.nextUrl.searchParams.get("adminSecret");
+    if (process.env.NODE_ENV === "production") {
+      const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+      if (!serviceKey || adminSecret !== serviceKey) {
+        return NextResponse.json(
+          { success: false, error: "Unauthorized: Invalid administrative credentials." },
+          { status: 401 }
+        );
+      }
+    }
 
     // 1. Resolve Connection String
     let finalConnectionString = connectionString || process.env.DATABASE_URL;

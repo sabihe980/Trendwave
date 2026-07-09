@@ -50,7 +50,7 @@ interface PendingInvite {
   invitedAt: string;
 }
 
-export default function TrendWaveSettings() {
+export default function PostrickSettings() {
   const [activeTab, setActiveTab] = useState("profile");
   
   // DATABASE SETUP STATE VARIABLES
@@ -70,9 +70,9 @@ export default function TrendWaveSettings() {
 
   // 1. --- TAB STATE: PROFILE ---
   const [userProfile, setUserProfile] = useState({
-    name: "John Trend",
-    email: "ksabih314@gmail.com",
-    avatar: "https://picsum.photos/seed/trendjohn/150/150",
+    name: "Guest Sandbox",
+    email: "guest@postrick.io",
+    avatar: "https://picsum.photos/seed/trendguest/150/150",
     timezone: "America/New_York",
     language: "en-US",
   });
@@ -90,32 +90,66 @@ export default function TrendWaveSettings() {
   const [logoPosition, setLogoPosition] = useState<number>(8); // default to bottom-right (index 8/grid 3x3)
   const [activeColorPickerIndex, setActiveColorPickerIndex] = useState<number | null>(null);
 
-  // Load Brand Kit from localStorage on mount
+  // Load Brand Kit from localStorage and check user session on mount
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const savedColors = localStorage.getItem("trendwave_brand_colors");
-      const savedHeading = localStorage.getItem("trendwave_brand_heading");
-      const savedBody = localStorage.getItem("trendwave_brand_body");
-      const savedLogo = localStorage.getItem("trendwave_brand_logo");
-      const savedPos = localStorage.getItem("trendwave_brand_logo_pos");
+    async function loadAuthAndBrand() {
+      // 1. Load brand kit from localstorage
+      if (typeof window !== "undefined") {
+        const savedColors = localStorage.getItem("postrick_brand_colors");
+        const savedHeading = localStorage.getItem("postrick_brand_heading");
+        const savedBody = localStorage.getItem("postrick_brand_body");
+        const savedLogo = localStorage.getItem("postrick_brand_logo");
+        const savedPos = localStorage.getItem("postrick_brand_logo_pos");
 
-      if (savedColors) {
-        try { setBrandColors(JSON.parse(savedColors)); } catch(e) {}
+        if (savedColors) {
+          try { setBrandColors(JSON.parse(savedColors)); } catch(e) {}
+        }
+        if (savedHeading) setBrandHeadingFont(savedHeading);
+        if (savedBody) setBrandBodyFont(savedBody);
+        if (savedLogo) setBrandLogo(savedLogo);
+        if (savedPos) setLogoPosition(parseInt(savedPos, 10));
       }
-      if (savedHeading) setBrandHeadingFont(savedHeading);
-      if (savedBody) setBrandBodyFont(savedBody);
-      if (savedLogo) setBrandLogo(savedLogo);
-      if (savedPos) setLogoPosition(parseInt(savedPos, 10));
+
+      // 2. Fetch session
+      try {
+        const res = await fetch("/api/auth");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.user) {
+            const profileName = data.profile?.full_name || data.user.email.split("@")[0];
+            const profileEmail = data.user.email;
+            setUserProfile(prev => ({
+              ...prev,
+              name: profileName,
+              email: profileEmail,
+              avatar: data.profile?.avatar_url || `https://picsum.photos/seed/${data.user.id}/150/150`
+            }));
+            setMembers([
+              {
+                id: data.user.id,
+                name: profileName,
+                email: profileEmail,
+                role: "Owner",
+                avatar: data.profile?.avatar_url || `https://picsum.photos/seed/${data.user.id}/150/150`,
+                lastActive: "Active now"
+              }
+            ]);
+          }
+        }
+      } catch (err) {
+        console.error("Auth load error in settings:", err);
+      }
     }
+    loadAuthAndBrand();
   }, []);
 
   // Save Brand Kit to LocalStorage & notify
   const handleSaveBrandKit = () => {
-    localStorage.setItem("trendwave_brand_colors", JSON.stringify(brandColors));
-    localStorage.setItem("trendwave_brand_heading", brandHeadingFont);
-    localStorage.setItem("trendwave_brand_body", brandBodyFont);
-    localStorage.setItem("trendwave_brand_logo", brandLogo);
-    localStorage.setItem("trendwave_brand_logo_pos", logoPosition.toString());
+    localStorage.setItem("postrick_brand_colors", JSON.stringify(brandColors));
+    localStorage.setItem("postrick_brand_heading", brandHeadingFont);
+    localStorage.setItem("postrick_brand_body", brandBodyFont);
+    localStorage.setItem("postrick_brand_logo", brandLogo);
+    localStorage.setItem("postrick_brand_logo_pos", logoPosition.toString());
     
     confetti({ particleCount: 30, spread: 40 });
     showToast("Brand Kit synced and stored. Available immediately in Creative Kit (Page 9)!", "success");
@@ -135,7 +169,7 @@ export default function TrendWaveSettings() {
   }, [activeTab]);
 
   const [currentPlan, setCurrentPlan] = useState({
-    name: "Trend Wave Professional Premium",
+    name: "Postrick Professional Premium",
     price: "$79/mo",
     renewalDate: "July 24, 2026",
     paymentMethod: { type: "visa", last4: "4921", exp: "12/28" }
@@ -158,16 +192,10 @@ export default function TrendWaveSettings() {
 
   // 4. --- TAB STATE: TEAM & PERMISSIONS ---
   const [members, setMembers] = useState<TeamMember[]>([
-    { id: "m1", name: "John Trend", email: "ksabih314@gmail.com", role: "Owner", avatar: "https://picsum.photos/seed/m1av/100/100", lastActive: "Active now" },
-    { id: "m2", name: "Sarah Green", email: "s.green@trendwave.club", role: "Admin", avatar: "https://picsum.photos/seed/m2av/100/100", lastActive: "2 hours ago" },
-    { id: "m3", name: "Alex Compost", email: "alex.c@trendwave.club", role: "Editor", avatar: "https://picsum.photos/seed/m3av/100/100", lastActive: "Yesterday" },
-    { id: "m4", name: "Mia Sprout", email: "mia.sprout@trendwave.club", role: "Viewer", avatar: "https://picsum.photos/seed/m4av/100/100", lastActive: "3 days ago" },
+    { id: "m1", name: "Guest Sandbox", email: "guest@postrick.io", role: "Owner", avatar: "https://picsum.photos/seed/trendguest/100/100", lastActive: "Active now" }
   ]);
 
-  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([
-    { id: "inv1", email: "growth@trendwave.club", role: "Editor", invitedAt: "June 19, 2026" },
-    { id: "inv2", email: "seedling@trendwave.club", role: "Viewer", invitedAt: "June 20, 2026" }
-  ]);
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
 
   const [hoveredRoleTooltip, setHoveredRoleTooltip] = useState<string | null>(null);
   const [isInviteModalOpen, setIsInviteModalOpen] = useState(false);
@@ -241,7 +269,7 @@ export default function TrendWaveSettings() {
   const [isRegeneratingKey, setIsRegeneratingKey] = useState(false);
   const [showKeyRegenConfirm, setShowKeyRegenConfirm] = useState(false);
   
-  const [webhookUrl, setWebhookUrl] = useState("https://api.yourdomain.com/webhooks/trendwave");
+  const [webhookUrl, setWebhookUrl] = useState("https://api.yourdomain.com/webhooks/postrick");
   const [webhookLogs, setWebhookLogs] = useState<Array<{ id: string; time: string; event: string; status: number }>>([
     { id: "wh-1", time: "2 hrs ago", event: "post.published", status: 200 },
     { id: "wh-2", time: "1 day ago", event: "post.failed", status: 500 }
@@ -346,37 +374,6 @@ export default function TrendWaveSettings() {
         </div>
       </div>
 
-      {/* DB Setup Reminder Alert to make it extremely visible as requested */}
-      {activeTab !== "database" && (
-        <motion.div 
-          initial={{ opacity: 0, y: -10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="bg-amber-50/80 border-2 border-amber-200 rounded-2xl p-4 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 text-left shadow-xs"
-        >
-          <div className="flex gap-3 items-start">
-            <div className="w-8 h-8 rounded-full bg-amber-100/80 flex items-center justify-center shrink-0 text-amber-700 border border-amber-200">
-              <RefreshCw className="w-4 h-4 animate-spin-slow text-amber-600" />
-            </div>
-            <div>
-              <h4 className="font-serif font-black text-xs text-amber-950">Supabase Database Setup Recommended</h4>
-              <p className="text-[11px] text-amber-900/80 leading-relaxed mt-0.5">
-                Execute schema tables, triggers, and migrations directly onto your live Supabase database instance with a single click.
-              </p>
-            </div>
-          </div>
-          <button
-            type="button"
-            onClick={() => {
-              setActiveTab("database");
-              confetti({ particleCount: 30, spread: 40 });
-            }}
-            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-[10px] font-mono font-black uppercase tracking-wider transition-colors cursor-pointer shrink-0 shadow-sm"
-          >
-            Configure Supabase Connection →
-          </button>
-        </motion.div>
-      )}
-
       {/* CORE WRAPPER: SUB-NAVIGATION LEFT RAIL + CONTENT RIGHT SIDE */}
       <div className="flex flex-col lg:flex-row gap-8 items-start">
         
@@ -389,7 +386,6 @@ export default function TrendWaveSettings() {
             { id: "team", label: "Team & Roles", icon: <Users className="w-4 h-4" /> },
             { id: "notifications", label: "Notifications", icon: <Bell className="w-4 h-4" /> },
             { id: "api", label: "API & Webhooks", icon: <Code className="w-4 h-4" /> },
-            { id: "database", label: "Database Setup ⚡", icon: <RefreshCw className="w-4 h-4 text-emerald-600" />, textClass: "text-[#117644] font-black" },
             { id: "danger", label: "Danger Zone", icon: <Trash2 className="w-4 h-4 text-rose-600" />, textClass: "text-rose-700 font-bold" }
           ].map((tab) => {
             const isSelected = activeTab === tab.id;
@@ -929,7 +925,7 @@ export default function TrendWaveSettings() {
                     <div className="flex justify-between items-start z-10">
                       <div>
                         <span className="text-[8px] font-mono font-black text-[#C5E729] uppercase tracking-wider block">Payout Card</span>
-                        <h5 className="font-serif font-black text-xs text-white">Trend Wave Organics Inc.</h5>
+                        <h5 className="font-serif font-black text-xs text-white">Postrick Organics Inc.</h5>
                       </div>
                       <span className="font-mono text-[9px] bg-white/10 px-1.5 py-0.5 rounded uppercase font-bold">VISA</span>
                     </div>
@@ -1181,7 +1177,7 @@ export default function TrendWaveSettings() {
                         { id: "reminder", label: "Scheduled Post Reminder", desc: "Sustain queue calendar checkups before timeline ticks." },
                         { id: "weekly", label: "Weekly Performance Digest", desc: "Aggregate click trends, conversion rate metrics, and insights." },
                         { id: "team", label: "Team Activity Logs", desc: "Log role edits, brand metadata changes, and invite logs." },
-                        { id: "product", label: "Trend Wave Product Updates", desc: "Occasional alerts regarding new generative templates." }
+                        { id: "product", label: "Postrick Product Updates", desc: "Occasional alerts regarding new generative templates." }
                       ].map((row) => (
                         <tr key={row.id} className="hover:bg-neutral-50 transition-colors">
                           <td className="p-4 pl-5">
@@ -1496,199 +1492,7 @@ export default function TrendWaveSettings() {
               </motion.div>
             )}
 
-            {/* TAB: DATABASE SETUP */}
-            {activeTab === "database" && (
-              <motion.div
-                key="tab-database"
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -15 }}
-                transition={{ duration: 0.15 }}
-                className="bg-[#FAF5EB]/40 border-2 border-[#eae3d2] rounded-3xl p-6 space-y-6 text-left relative overflow-hidden"
-              >
-                {/* Visual accent background */}
-                <div className="absolute right-0 top-0 translate-x-12 -translate-y-12 w-32 h-32 bg-[#117644]/5 rounded-full blur-2xl" />
 
-                <div>
-                  <span className="text-[8px] font-mono font-black text-[#117644] uppercase tracking-widest block font-bold">RELIABILITY &amp; BACKEND PROVISIONING</span>
-                  <h3 className="font-serif font-black text-lg text-[#042F1A] mt-0.5">Automated Database Provisioner</h3>
-                  <p className="text-xs text-[#042F1A]/70 leading-normal">
-                    Quickly deploy the entire relational database schema, Row-Level Security (RLS) policies, and performance indexes/triggers directly onto your active live Supabase project instance.
-                  </p>
-                </div>
-
-                <div className="bg-[#117644]/5 border border-[#117644]/20 rounded-2xl p-4 flex gap-3.5 items-start">
-                  <Info className="w-5 h-5 text-[#117644] shrink-0 mt-0.5" />
-                  <div className="space-y-1">
-                    <h4 className="font-serif font-bold text-xs text-[#042F1A]">Connected Supabase Target Meta</h4>
-                    <div className="text-[10px] font-mono text-[#042F1A]/60 space-y-0.5">
-                      <div><strong className="text-[#117644]">Project API Gateway:</strong> https://blunxlndlkbzizrtigyk.supabase.co</div>
-                      <div><strong className="text-[#117644]">Relational Target Host:</strong> db.blunxlndlkbzizrtigyk.supabase.co</div>
-                      <div><strong className="text-[#117644]">Primary Database:</strong> postgres (Port 5432)</div>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  {/* Password Input */}
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-mono font-black uppercase text-[#042F1A]/70">
-                      Supabase Database Password <span className="text-rose-600">*</span>
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="password"
-                        placeholder="Enter the DB password you set during Supabase project creation"
-                        value={dbPassword}
-                        onChange={(e) => {
-                          setDbPassword(e.target.value);
-                          setMigError("");
-                        }}
-                        className="w-full text-xs bg-[#FAF5EB] border-2 border-[#eae3d2] rounded-xl px-4 py-3 outline-none focus:border-[#117644] transition-colors font-mono"
-                      />
-                    </div>
-                    <p className="text-[9px] text-[#042F1A]/50">
-                      We never store your database password. It is only used server-side to establish a brief connection to execute migration files.
-                    </p>
-                  </div>
-
-                  {/* Custom Connection String (Optional) */}
-                  <div className="space-y-1.5">
-                    <label className="block text-[10px] font-mono font-black uppercase text-[#042F1A]/70 flex items-center justify-between">
-                      <span>Or Custom Connection URI (Optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      placeholder="postgresql://postgres:[password]@db.your-ref.supabase.co:5432/postgres?sslmode=require"
-                      value={customConnStr}
-                      onChange={(e) => {
-                        setCustomConnStr(e.target.value);
-                        setMigError("");
-                      }}
-                      className="w-full text-xs bg-[#FAF5EB] border-2 border-[#eae3d2] rounded-xl px-4 py-3 outline-none focus:border-[#117644] transition-colors font-mono"
-                    />
-                  </div>
-
-                  {/* Trigger Button */}
-                  <div className="pt-2 flex justify-end">
-                    <button
-                      onClick={async () => {
-                        if (!dbPassword && !customConnStr) {
-                          setMigError("Please enter your database password or custom connection URI to begin.");
-                          return;
-                        }
-
-                        setMigrating(true);
-                        setMigError("");
-                        setMigResult(null);
-
-                        try {
-                          const res = await fetch("/api/setup-db", {
-                            method: "POST",
-                            headers: { "Content-Type": "application/json" },
-                            body: JSON.stringify({
-                              dbPassword,
-                              connectionString: customConnStr
-                            })
-                          });
-
-                          const data = await res.json();
-                          if (res.ok && data.success) {
-                            setMigResult(data);
-                            confetti({ particleCount: 60, spread: 50 });
-                            showToast("Database fully built!", "success");
-                          } else {
-                            setMigError(data.error || "Failed to execute database migrations.");
-                            setMigResult(data);
-                          }
-                        } catch (err: any) {
-                          setMigError(err.message || "An unexpected error occurred during execution.");
-                        } finally {
-                          setMigrating(false);
-                        }
-                      }}
-                      disabled={migrating}
-                      className="flex items-center gap-2 py-3 px-6 bg-[#117644] hover:bg-[#0c5932] disabled:bg-[#117644]/50 text-white rounded-xl text-xs uppercase font-black tracking-widest transition-colors cursor-pointer"
-                    >
-                      {migrating ? (
-                        <>
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                          <span>Provisioning Database...</span>
-                        </>
-                      ) : (
-                        <>
-                          <RefreshCw className="w-4 h-4" />
-                          <span>Run Database Setup</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                </div>
-
-                {/* Error Console */}
-                {migError && (
-                  <div className="bg-rose-50 border border-rose-200 rounded-2xl p-4 flex gap-3 text-left">
-                    <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
-                    <div className="space-y-1">
-                      <h4 className="font-serif font-black text-xs text-rose-950">Database Setup Failure</h4>
-                      <p className="text-[10px] text-rose-900 leading-relaxed font-mono bg-white/40 p-2 rounded border border-rose-100 whitespace-pre-wrap">
-                        {migError}
-                      </p>
-                    </div>
-                  </div>
-                )}
-
-                {/* Live Output Console */}
-                {migResult && (
-                  <div className={`border rounded-2xl p-5 text-left space-y-4 ${
-                    migResult.success ? "bg-[#117644]/5 border-[#117644]/20" : "bg-amber-50 border-amber-200"
-                  }`}>
-                    <div className="flex items-center justify-between">
-                      <h4 className="font-serif font-black text-xs text-[#042F1A] flex items-center gap-2">
-                        {migResult.success ? (
-                          <CheckIcon className="w-4 h-4 text-[#117644]" />
-                        ) : (
-                          <AlertCircle className="w-4 h-4 text-amber-700" />
-                        )}
-                        <span>Provisioning Logs &amp; Status</span>
-                      </h4>
-                      <span className={`text-[9px] font-mono font-bold uppercase px-2 py-0.5 rounded-full ${
-                        migResult.success ? "bg-[#117644]/20 text-[#117644]" : "bg-amber-100 text-amber-800"
-                      }`}>
-                        {migResult.success ? "Completed" : "Partial Sync Failure"}
-                      </span>
-                    </div>
-
-                    <div className="space-y-2 divide-y divide-[#eae3d2]/30 text-xs">
-                      {migResult.results && migResult.results.map((r: any, idx: number) => (
-                        <div key={idx} className="pt-2 flex justify-between items-start gap-4">
-                          <div className="space-y-0.5">
-                            <span className="font-mono text-[10px] font-bold text-[#042F1A]/80">{r.file}</span>
-                            {r.error && (
-                              <p className="text-[10px] text-rose-700 font-mono bg-rose-50/50 p-2 rounded mt-1 border border-rose-100/50">
-                                Error: {r.error}
-                              </p>
-                            )}
-                          </div>
-                          <span className={`text-[9px] font-mono font-black uppercase tracking-wider px-2 py-0.5 rounded ${
-                            r.success ? "bg-[#117644]/15 text-[#117644]" : "bg-rose-100 text-rose-700"
-                          }`}>
-                            {r.success ? "Success" : "Failed"}
-                          </span>
-                        </div>
-                      ))}
-                    </div>
-
-                    <p className="text-[10px] text-[#042F1A]/60 font-medium">
-                      {migResult.success 
-                        ? "Success! The table schemas, roles, indexes, and triggers were created successfully on Supabase. Your Trend Wave application is fully dynamic and backed."
-                        : "Some SQL commands failed. Ensure you didn't run the migrations twice on an already initialized database, which could raise 'already exists' constraints."
-                      }
-                    </p>
-                  </div>
-                )}
-              </motion.div>
-            )}
 
           </AnimatePresence>
         </div>
@@ -1758,10 +1562,10 @@ export default function TrendWaveSettings() {
                         if (tier.current) {
                           setIsPlanModalOpen(false);
                         } else {
-                          setCurrentPlan(p => ({ ...p, name: `Trend Wave ${tier.name}`, price: tier.price }));
+                          setCurrentPlan(p => ({ ...p, name: `Postrick ${tier.name}`, price: tier.price }));
                           setIsPlanModalOpen(false);
                           confetti({ particleCount: 35, spread: 30 });
-                          showToast(`Swapped subscription plan: Trend Wave ${tier.name}!`, "success");
+                          showToast(`Swapped subscription plan: Postrick ${tier.name}!`, "success");
                         }
                       }}
                       className={`w-full py-2 rounded-xl text-[9px] font-black uppercase tracking-widest text-center transition-colors cursor-pointer ${

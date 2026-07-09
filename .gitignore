@@ -1,5 +1,4 @@
 node_modules
-.next
 out
 build
 dist
@@ -7,3 +6,4 @@ dist
 .env.local
 .env.production
 .env.development
+.next-dev

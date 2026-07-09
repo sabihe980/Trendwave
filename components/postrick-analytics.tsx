@@ -13,7 +13,7 @@ import {
 } from "recharts";
 import confetti from "canvas-confetti";
 
-import { Instagram, Linkedin, Facebook, Youtube } from "./dashboard-page";
+import { Instagram, Linkedin, Facebook, Youtube } from "./icons";
 
 // Custom Pinterest SVG
 function PinterestIcon({ className }: { className?: string }) {
@@ -70,7 +70,7 @@ const HEATMAP_SLOTS = [
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
-export default function TrendWaveAnalytics() {
+export default function PostrickAnalytics() {
 
   // Range selections
   const [selectedRange, setSelectedRange] = useState<string>("Last 30 days");
@@ -90,6 +90,11 @@ export default function TrendWaveAnalytics() {
   // Audience Insights Active Tab
   const [audienceTab, setAudienceTab] = useState<"times" | "demographics">("times");
 
+  // Real database analytics states
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [apiData, setApiData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
   // Simulated count-up animation values
   const [animatedValues, setAnimatedValues] = useState({
     reach: 0,
@@ -99,25 +104,64 @@ export default function TrendWaveAnalytics() {
     published: 0
   });
 
-  // Re-trigger visual layout increments on filter changes
+  // 1. Fetch current workspace identity on mount
   useEffect(() => {
-    const getTargetKPIs = () => {
-      // Generate scaled numbers depending on filters selected
-      const multiplier = selectedPlatforms.length * 0.35 + (selectedRange === "Last 7 days" ? 1 : selectedRange === "Last 30 days" ? 3.5 : 9.0);
-      return {
-        reach: Math.round(18400 * multiplier),
-        engagement: Math.round(3200 * multiplier),
-        rate: selectedPlatforms.includes("instagram") ? 3.84 : 2.92,
-        growth: Math.round(520 * multiplier),
-        published: Math.round(12 * multiplier)
-      };
-    };
+    async function loadWorkspace() {
+      try {
+        const authRes = await fetch("/api/auth");
+        if (authRes.ok) {
+          const authData = await authRes.json();
+          if (authData.authenticated && authData.profile) {
+            const wId = authData.profile.current_workspace_id || authData.profile.workspaces?.[0]?.id;
+            setWorkspaceId(wId);
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load workspace in analytics:", err);
+      }
+    }
+    loadWorkspace();
+  }, []);
 
-    const targets = getTargetKPIs();
+  // 2. Load aggregate metrics and timeline records
+  useEffect(() => {
+    if (!workspaceId) {
+      setLoading(false);
+      return;
+    }
+    async function loadAnalytics() {
+      setLoading(true);
+      try {
+        const periodParam = selectedRange === "Last 7 days" ? "7d" : selectedRange === "Last 90 days" ? "90d" : "30d";
+        const res = await fetch(`/api/analytics?workspaceId=${workspaceId}&period=${periodParam}`);
+        if (res.ok) {
+          const data = await res.json();
+          setApiData(data);
+        }
+      } catch (err) {
+        console.error("Failed to fetch analytics:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadAnalytics();
+  }, [workspaceId, selectedRange]);
+
+  // 3. Count-up visual sweet animation triggered on new database loads
+  useEffect(() => {
+    if (!apiData) return;
+    const summary = apiData.summary || { reach: 0, impressions: 0, engagementRate: 0, followers: 0, clicks: 0 };
     
-    // Short count-up visual sweep simulation
+    const targets = {
+      reach: summary.reach || 0,
+      engagement: (summary.likes || 0) + (summary.comments || 0) + (summary.shares || 0) + (summary.clicks || 0),
+      rate: summary.engagementRate || 0,
+      growth: summary.followers || 0,
+      published: summary.impressions || 0
+    };
+    
     let startTimestamp: number | null = null;
-    const duration = 800; // milliseconds
+    const duration = 600; // milliseconds
     let animFrameId: number;
 
     const step = (timestamp: number) => {
@@ -144,7 +188,7 @@ export default function TrendWaveAnalytics() {
         window.cancelAnimationFrame(animFrameId);
       }
     };
-  }, [selectedRange, selectedPlatforms]);
+  }, [apiData]);
 
   const togglePlatformFilter = (id: string) => {
     if (selectedPlatforms.includes(id)) {
@@ -272,7 +316,7 @@ export default function TrendWaveAnalytics() {
   const triggerExport = (format: "PDF" | "CSV") => {
     setIsExportOpen(false);
     confetti({ particleCount: 40, spread: 45 });
-    setExportNotification(`Generating and compiling your Trend Wave ${format} report...`);
+    setExportNotification(`Generating and compiling your Postrick ${format} report...`);
     setTimeout(() => {
       setExportNotification(null);
     }, 4500);
@@ -574,64 +618,76 @@ export default function TrendWaveAnalytics() {
 
         {/* COMBO CHART AREA */}
         <div className="h-80 md:h-[350px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <ComposedChart data={activeTrendData} margin={{ left: -15, right: -15, top: 10 }}>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1efe6" />
-              <XAxis dataKey="date" tick={{ fontSize: 9, fontWeight: "600", fill: "#57534e" }} />
-              {/* Dual Y-Axes */}
-              <YAxis yAxisId="left" orientation="left" stroke="#117644" tick={{ fontSize: 9, fontWeight: "600" }} label={{ value: 'Published count (bars)', angle: -90, position: 'insideLeft', style: { fontSize: '8px', fill: '#117644', fontWeight: '800' } }} />
-              <YAxis yAxisId="right" orientation="right" stroke="#78716c" tick={{ fontSize: 9, fontWeight: "600" }} label={{ value: 'Engagement % (lines)', angle: 90, position: 'insideRight', style: { fontSize: '8px', fill: '#78716c', fontWeight: '800' } }} />
-              
-              <Tooltip 
-                content={({ active, payload, label }) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-[#FAF5EB] border-2 border-[#117644] p-3 rounded-xl shadow-2xl space-y-1.5 text-left text-[11px] max-w-[200px]">
-                        <span className="block font-mono text-[9px] font-black text-[#117644] uppercase tracking-wider border-b pb-1 font-serif">{label}</span>
-                        {payload.map((entry: any) => {
-                          const isBar = entry.name === "posts" || entry.dataKey === "posts";
-                          const val = isBar ? `${entry.value} post(s)` : `${entry.value}%`;
-                          return (
-                            <div key={entry.name} className="flex justify-between items-center gap-4">
-                              <span className="font-semibold text-stone-600 flex items-center gap-1">
-                                <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
-                                {entry.name === "posts" ? "Posts Dispatched" : entry.name}
-                              </span>
-                              <span className="font-mono font-bold text-stone-900">{val}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
+          {(!apiData || apiData.timeline?.length === 0) ? (
+            <div className="flex flex-col items-center justify-center h-full border-2 border-dashed border-[#eae3d2] rounded-3xl bg-stone-50/40 p-8 text-center space-y-4">
+              <div className="p-3 bg-[#FAF5EB] rounded-full text-[#117644] border border-[#eae3d2] shadow-sm">
+                <BarChart3 className="w-6 h-6 animate-pulse" />
+              </div>
+              <div className="space-y-1">
+                <h4 className="font-serif font-black text-sm text-[#042F1A]">No tracking history recorded</h4>
+                <p className="text-xs text-stone-500 max-w-sm mx-auto">Connect your social accounts and publish scheduled content. Your first statistics and timeline aggregates will populate here automatically.</p>
+              </div>
+            </div>
+          ) : (
+            <ResponsiveContainer width="100%" height="100%">
+              <ComposedChart data={apiData.timeline} margin={{ left: -15, right: -15, top: 10 }}>
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1efe6" />
+                <XAxis dataKey="date" tick={{ fontSize: 9, fontWeight: "600", fill: "#57534e" }} />
+                {/* Dual Y-Axes */}
+                <YAxis yAxisId="left" orientation="left" stroke="#117644" tick={{ fontSize: 9, fontWeight: "600" }} label={{ value: 'Published count (bars)', angle: -90, position: 'insideLeft', style: { fontSize: '8px', fill: '#117644', fontWeight: '800' } }} />
+                <YAxis yAxisId="right" orientation="right" stroke="#78716c" tick={{ fontSize: 9, fontWeight: "600" }} label={{ value: 'Engagement % (lines)', angle: 90, position: 'insideRight', style: { fontSize: '8px', fill: '#78716c', fontWeight: '800' } }} />
+                
+                <Tooltip 
+                  content={({ active, payload, label }) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-[#FAF5EB] border-2 border-[#117644] p-3 rounded-xl shadow-2xl space-y-1.5 text-left text-[11px] max-w-[200px]">
+                          <span className="block font-mono text-[9px] font-black text-[#117644] uppercase tracking-wider border-b pb-1 font-serif">{label}</span>
+                          {payload.map((entry: any) => {
+                            const isBar = entry.name === "posts" || entry.dataKey === "posts";
+                            const val = isBar ? `${entry.value} post(s)` : `${entry.value}%`;
+                            return (
+                              <div key={entry.name} className="flex justify-between items-center gap-4">
+                                <span className="font-semibold text-stone-600 flex items-center gap-1">
+                                  <span className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: entry.color }} />
+                                  {entry.name === "posts" ? "Posts Dispatched" : entry.name}
+                                </span>
+                                <span className="font-mono font-bold text-stone-900">{val}</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
 
-              {/* Dynamic Bar layer */}
-              <Bar yAxisId="left" dataKey="posts" name="posts" fill="#117644" fillOpacity={0.75} radius={[4, 4, 0, 0]} barSize={26} />
+                {/* Dynamic Bar layer */}
+                <Bar yAxisId="left" dataKey="posts" name="posts" fill="#117644" fillOpacity={0.75} radius={[4, 4, 0, 0]} barSize={26} />
 
-              {/* Dynamic Lines depending on platform activations */}
-              {PLATFORMS_CONFIG.map(p => {
-                if (!selectedPlatforms.includes(p.id) || hiddenPlatformLines.includes(p.name)) return null;
-                return (
-                  <Line
-                    key={p.id}
-                    yAxisId="right"
-                    type="monotone"
-                    dataKey={p.name}
-                    name={p.name}
-                    stroke={p.color}
-                    strokeWidth={2.4}
-                    dot={{ r: 4, strokeWidth: 1 }}
-                    activeDot={{ r: 6, strokeWidth: 1 }}
-                    animationDuration={1200}
-                  />
-                );
-              })}
+                {/* Dynamic Lines depending on platform activations */}
+                {PLATFORMS_CONFIG.map(p => {
+                  if (!selectedPlatforms.includes(p.id) || hiddenPlatformLines.includes(p.name)) return null;
+                  return (
+                    <Line
+                      key={p.id}
+                      yAxisId="right"
+                      type="monotone"
+                      dataKey={p.name}
+                      name={p.name}
+                      stroke={p.color}
+                      strokeWidth={2.4}
+                      dot={{ r: 4, strokeWidth: 1 }}
+                      activeDot={{ r: 6, strokeWidth: 1 }}
+                      animationDuration={1200}
+                    />
+                  );
+                })}
 
-            </ComposedChart>
-          </ResponsiveContainer>
+              </ComposedChart>
+            </ResponsiveContainer>
+          )}
         </div>
 
         <p className="text-[9px] text-neutral-400 font-mono text-center uppercase tracking-wider">
@@ -935,7 +991,7 @@ export default function TrendWaveAnalytics() {
                 </p>
                 
                 <div className="p-3 bg-white border border-[#eae3d2] rounded-xl space-y-1.5 text-[10px] text-stone-600 leading-relaxed font-sans mt-3">
-                  <span className="font-black text-[#042F1A] block">⚡ TREND WAVE DISPATCH TIP:</span>
+                  <span className="font-black text-[#042F1A] block">⚡ POSTRICK DISPATCH TIP:</span>
                   Schedule your newly designed banners from Creative Kit to publish automatically during these peak segments to maximize organic reach velocity.
                 </div>
               </div>

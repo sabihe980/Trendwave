@@ -1,5 +1,5 @@
 -- =====================================================================
--- SAVVYGROW AI - COMPLETE POSTGRESQL SCHEMA FOR SUPABASE
+-- POSTRICK AI - COMPLETE POSTGRESQL SCHEMA FOR SUPABASE
 -- Migration: 20260623000000_schema.sql
 -- Description: Core relational structure mapping to all SaaS features
 -- =====================================================================

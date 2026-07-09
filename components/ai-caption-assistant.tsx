@@ -10,7 +10,7 @@ import {
 import confetti from "canvas-confetti";
 
 // Custom Social Icon Imports
-import { Instagram, Linkedin, Facebook, Youtube } from "./dashboard-page";
+import { Instagram, Linkedin, Facebook, Youtube } from "./icons";
 
 function PinterestIcon({ className }: { className?: string }) {
   return (
@@ -86,8 +86,8 @@ const INITIAL_HISTORY: PastGeneration[] = [
     tone: "Witty",
     variants: [
       {
-        text: "The rumors are true: scheduling multi-platform feeds manually in 2026 is officially classified as extreme sports. 🤫 Safeguard your schedules and let Trend Wave handle your dispatch queues seamlessly.",
-        hashtags: ["TrendWave", "SMMTips", "OfficeHumor"],
+        text: "The rumors are true: scheduling multi-platform feeds manually in 2026 is officially classified as extreme sports. 🤫 Safeguard your schedules and let Postrick handle your dispatch queues seamlessly.",
+        hashtags: ["Postrick", "SMMTips", "OfficeHumor"],
         toneTag: "Witty",
         platform: "twitter"
       },
@@ -275,7 +275,7 @@ export default function AiCaptionAssistant({
     const updated = [...generatedResults];
     updated[idx] = {
       ...targetVariant,
-      text: "Refreshing copywriting insights from Trend Wave AI...",
+      text: "Refreshing copywriting insights from Postrick AI...",
       hashtags: [],
     };
     setGeneratedResults(updated);
@@ -395,7 +395,7 @@ export default function AiCaptionAssistant({
             </h1>
             <span className="bg-[#117644]/10 text-[#117644] text-[8px] font-mono font-black uppercase px-2 py-0.5 rounded-full select-none flex items-center gap-1 border border-[#117644]/20">
               <Sparkles className="w-2.5 h-2.5 antialiased text-amber-500" />
-              Powered by Trend Wave AI
+              Powered by Postrick AI
             </span>
           </div>
           <p className="text-[11px] text-[#042F1A]/60 font-medium">

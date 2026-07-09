@@ -6,7 +6,7 @@ import {
   Sparkles, Sliders, ChevronDown, ChevronUp, Image as ImageIcon,
   Palette, Grid, Download, Trash2, Edit3, ArrowUpRight, Share2, 
   RotateCw, RefreshCw, Layers, Check, Plus, Star, X, Underline,
-  Type, ShoppingBag, Radio, MessageSquare, Megaphone, Calendar, ArrowLeft, ArrowRight, RefreshPlay
+  Type, ShoppingBag, Radio, MessageSquare, Megaphone, Calendar, ArrowLeft, ArrowRight
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
@@ -64,7 +64,7 @@ const CURATED_TEMPLATES: GraphicDesign[] = [
       {
         id: "l-text-tag",
         type: "text",
-        text: "TREND WAVE SPECIALS",
+        text: "POSTRICK SPECIALS",
         fontSize: 10,
         fontFamily: "Space Grotesk",
         color: "#C5E729",
@@ -154,7 +154,7 @@ const CURATED_TEMPLATES: GraphicDesign[] = [
       {
         id: "q-author",
         type: "text",
-        text: "— TREND WAVE TEAM",
+        text: "— POSTRICK TEAM",
         fontSize: 10,
         fontFamily: "JetBrains Mono",
         color: "#117644",
@@ -254,7 +254,7 @@ const CURATED_TEMPLATES: GraphicDesign[] = [
       {
         id: "ev-header",
         type: "text",
-        text: "TREND WAVE LIVE KEYNOTE",
+        text: "POSTRICK LIVE KEYNOTE",
         fontSize: 12,
         fontFamily: "JetBrains Mono",
         color: "#117644",
@@ -434,9 +434,9 @@ export default function AiCreativeKit({ onSendToComposer }: { onSendToComposer: 
 
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const savedColors = localStorage.getItem("trendwave_brand_colors");
-      const savedHeading = localStorage.getItem("trendwave_brand_heading");
-      const savedBody = localStorage.getItem("trendwave_brand_body");
+      const savedColors = localStorage.getItem("postrick_brand_colors");
+      const savedHeading = localStorage.getItem("postrick_brand_heading");
+      const savedBody = localStorage.getItem("postrick_brand_body");
       if (savedColors) {
         try {
           const parsed = JSON.parse(savedColors);
@@ -496,7 +496,7 @@ export default function AiCreativeKit({ onSendToComposer }: { onSendToComposer: 
 
   // Load My Designs from Local Storage on mount
   useEffect(() => {
-    const saved = localStorage.getItem("trendwave_creative_designs");
+    const saved = localStorage.getItem("postrick_creative_designs");
     if (saved) {
       try {
         setMyDesigns(JSON.parse(saved));
@@ -510,13 +510,13 @@ export default function AiCreativeKit({ onSendToComposer }: { onSendToComposer: 
         { ...CURATED_TEMPLATES[1], id: `seeded-${Date.now()}-2`, title: "Aesthetic Sustainable Board" }
       ];
       setMyDesigns(seeded);
-      localStorage.setItem("trendwave_creative_designs", JSON.stringify(seeded));
+      localStorage.setItem("postrick_creative_designs", JSON.stringify(seeded));
     }
   }, []);
 
   const saveDesigns = (newList: GraphicDesign[]) => {
     setMyDesigns(newList);
-    localStorage.setItem("trendwave_creative_designs", JSON.stringify(newList));
+    localStorage.setItem("postrick_creative_designs", JSON.stringify(newList));
   };
 
   // Trigger Design Generator

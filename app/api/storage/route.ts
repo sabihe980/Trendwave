@@ -1,10 +1,11 @@
 // =====================================================================
-// SAVVYGROW AI - MULTI-BUCKET ATTACHMENTS & UPLOAD API
+// POSTRICK AI - MULTI-BUCKET ATTACHMENTS & UPLOAD API
 // File: /app/api/storage/route.ts
 // =====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/supabaseClient";
+import { getAuthenticatedUser } from "@/lib/security";
 
 /**
  * POST: Handles multipart media uploads or saves generated asset references
@@ -12,9 +13,20 @@ import { getSupabaseAdminClient } from "@/lib/supabaseClient";
  */
 export async function POST(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const bucket = searchParams.get("bucket") || "uploads";
     const userId = searchParams.get("userId");
+
+    // Enforce that the user can only upload under their own userId to prevent ID spoofing / BOLA
+    const finalUserId = userId || user.userId;
+    if (finalUserId !== user.userId) {
+      return NextResponse.json({ error: "Forbidden: Spoofing userId is strictly prohibited." }, { status: 403 });
+    }
 
     // Validate request bounds
     const allowedBuckets = ["profile-images", "generated-images", "uploads", "creative-assets"];
@@ -36,7 +48,7 @@ export async function POST(req: NextRequest) {
     // 2. Build unique storage keypath
     const uniqueId = Math.random().toString(36).substring(2, 10);
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
-    const storagePath = `${userId || "shared"}/${uniqueId}_${cleanFileName}`;
+    const storagePath = `${finalUserId}/${uniqueId}_${cleanFileName}`;
 
     const supabase = getSupabaseAdminClient();
 
@@ -51,9 +63,9 @@ export async function POST(req: NextRequest) {
     const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
 
     // 3. Log details in activity audits
-    if (userId) {
+    if (finalUserId) {
       await supabase.from("activity_logs").insert({
-        user_id: userId,
+        user_id: finalUserId,
         action: "file_uploaded",
         details: { bucket, size_bytes: file.size, file_name: cleanFileName, cdn_url: publicUrl }
       });

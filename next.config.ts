@@ -7,10 +7,11 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
-  transpilePackages: ["lucide-react"],
   experimental: {
-    optimizePackageImports: []
+    workerThreads: false,
+    cpus: 1,
   }
 };
 
 export default nextConfig;
+

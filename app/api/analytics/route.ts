@@ -1,10 +1,11 @@
 // =====================================================================
-// SAVVYGROW AI - CORE SAAS METRIC ANALYTICS API
+// POSTRICK AI - CORE SAAS METRIC ANALYTICS API
 // File: /app/api/analytics/route.ts
 // =====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseClient } from "@/lib/supabaseClient";
+import { getAuthenticatedUser, verifyWorkspaceAccess } from "@/lib/security";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +15,23 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const workspaceId = searchParams.get("workspaceId");
     const period = searchParams.get("period") || "30d"; // '7d', '30d', '90d'
 
     if (!workspaceId) {
       return NextResponse.json({ error: "Missing required workspaceId parameter." }, { status: 400 });
+    }
+
+    // Tenant boundary verification
+    const hasAccess = await verifyWorkspaceAccess(workspaceId, user.userId);
+    if (!hasAccess) {
+      return NextResponse.json({ error: "Forbidden: You do not own this workspace." }, { status: 403 });
     }
 
     const supabase = getSupabaseClient();
@@ -118,8 +130,31 @@ export async function GET(req: NextRequest) {
         });
       });
     } else {
-      // Return a clean mock data structure if database relations are still being connected
-      return NextResponse.json(generateMockAnalytics(daysOffset));
+      // Return clean empty states when there is no database tracking history
+      return NextResponse.json({
+        summary: {
+          followers: 0,
+          followersGrowthRate: 0,
+          impressions: 0,
+          impressionsGrowthRate: 0,
+          reach: 0,
+          reachGrowthRate: 0,
+          likes: 0,
+          comments: 0,
+          shares: 0,
+          clicks: 0,
+          engagementRate: 0
+        },
+        platformBreakdown: {
+          instagram: { followers: 0, engagements: 0 },
+          facebook: { followers: 0, engagements: 0 },
+          linkedin: { followers: 0, engagements: 0 },
+          tiktok: { followers: 0, engagements: 0 },
+          pinterest: { followers: 0, engagements: 0 },
+          youtube: { followers: 0, engagements: 0 }
+        },
+        timeline: []
+      });
     }
 
     const calculatedEngagementRate = totalImpressions > 0 

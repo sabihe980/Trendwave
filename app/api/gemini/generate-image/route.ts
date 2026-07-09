@@ -1,8 +1,14 @@
 import { GoogleGenAI } from "@google/genai";
 import { NextRequest, NextResponse } from "next/server";
+import { getAuthenticatedUser } from "@/lib/security";
 
 export async function POST(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const { prompt, aspectRatio = "1:1" } = await req.json();
     if (!prompt) {
       return NextResponse.json({ error: "Prompt is required" }, { status: 400 });
@@ -50,7 +56,7 @@ export async function POST(req: NextRequest) {
         }
       });
 
-      if (response && response.generatedImages && response.generatedImages[0]) {
+      if (response && response.generatedImages && response.generatedImages[0] && response.generatedImages[0].image) {
         const base64Bytes = response.generatedImages[0].image.imageBytes;
         return NextResponse.json({
           success: true,

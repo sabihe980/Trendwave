@@ -8,7 +8,7 @@ export async function POST(req: NextRequest) {
 
     if (!key) {
       const simulatedResponses = [
-        "That's a great question! Trend Wave is built to automate social publishing on LinkedIn, X, custom channels, Facebook, Instagram and TikTok. We do offer a **Free Forever** lifetime tier too! No credit cards, ever.",
+        "That's a great question! Postrick is built to automate social publishing on LinkedIn, X, custom channels, Facebook, Instagram and TikTok. We do offer a **Free Forever** lifetime tier too! No credit cards, ever.",
         "Absolutely! Our campaign manager features rich analytics tools like heatmaps and wave charts to double your click-through rates. Would you like to try our Lifetime Free trial right now?",
         "You can sign up free with no credit card required. Our chatbot is ready to answer any questions you have and discuss integrations!",
       ];
@@ -25,8 +25,8 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    const systemPrompt = `You are "Trend Wave Assistant", a friendly, direct, and helpful AI support representative. 
-Your goal is to answer queries from digital creators, social media agencies, and startup founders about "Trend Wave".
+    const systemPrompt = `You are "Postrick Assistant", a friendly, direct, and helpful AI support representative. 
+Your goal is to answer queries from digital creators, social media agencies, and startup founders about "Postrick".
 
 Key product insights to include in your answers if asked:
 - We have a **Free Forever Tier** (Free Forever - includes basic queue scheduling and Smart Caption assistant).

@@ -1,10 +1,11 @@
 // =====================================================================
-// SAVVYGROW AI - BILLING & STRIPE INTEGRATION API
+// POSTRICK AI - BILLING & STRIPE INTEGRATION API
 // File: /app/api/billing/route.ts
 // =====================================================================
 
 import { NextRequest, NextResponse } from "next/server";
 import { getSupabaseAdminClient } from "@/lib/supabaseClient";
+import { getAuthenticatedUser } from "@/lib/security";
 import { z } from "zod";
 
 const billingActionSchema = z.object({
@@ -19,11 +20,21 @@ const billingActionSchema = z.object({
  */
 export async function GET(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const { searchParams } = new URL(req.url);
     const userId = searchParams.get("userId");
 
     if (!userId) {
       return NextResponse.json({ error: "userId parameter is required." }, { status: 400 });
+    }
+
+    // Secure BOLA check
+    if (userId !== user.userId) {
+      return NextResponse.json({ error: "Forbidden: You cannot access billing data of another user." }, { status: 403 });
     }
 
     const supabase = getSupabaseAdminClient();
@@ -59,6 +70,11 @@ export async function GET(req: NextRequest) {
  */
 export async function POST(req: NextRequest) {
   try {
+    const user = getAuthenticatedUser(req);
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized: Active session required." }, { status: 401 });
+    }
+
     const body = await req.json();
     const result = billingActionSchema.safeParse(body);
 
@@ -67,6 +83,12 @@ export async function POST(req: NextRequest) {
     }
 
     const { userId, planTier, billingCycle, action } = result.data;
+
+    // Secure BOLA check
+    if (userId !== user.userId) {
+      return NextResponse.json({ error: "Forbidden: You cannot modify billing data of another user." }, { status: 403 });
+    }
+
     const supabase = getSupabaseAdminClient();
 
     // 1. Handle checkout initiation

@@ -9,7 +9,7 @@ import {
 } from "lucide-react";
 import confetti from "canvas-confetti";
 
-import { Instagram, Linkedin, Facebook, Youtube } from "./dashboard-page";
+import { Instagram, Linkedin, Facebook, Youtube } from "./icons";
 
 // Custom Pinterest SVG
 function PinterestIcon({ className }: { className?: string }) {
@@ -40,15 +40,16 @@ interface AccountConfig {
   errorDetail?: string;
   brandColor: string;
   glowColor: string;
-  icon: JSX.Element;
+  icon: React.ReactNode;
   textClass: string;
+  platformId?: string;
 }
 
 const ALL_PLATFORMS_DATA = [
   { 
     id: "instagram", 
     name: "Instagram Business", 
-    handle: "@trendwave_lifestyle", 
+    handle: "@postrick_lifestyle", 
     avatar: "https://picsum.photos/seed/insta-logo-avatar/150/150",
     followers: "124.5K", 
     postsThisMonth: 18,
@@ -61,7 +62,7 @@ const ALL_PLATFORMS_DATA = [
   { 
     id: "linkedin", 
     name: "LinkedIn Page", 
-    handle: "Trend Wave Organics Inc.", 
+    handle: "Postrick Organics Inc.", 
     avatar: "https://picsum.photos/seed/linkedin-logo-avatar/150/150",
     followers: "14.3K", 
     postsThisMonth: 12,
@@ -74,7 +75,7 @@ const ALL_PLATFORMS_DATA = [
   { 
     id: "facebook", 
     name: "Facebook Global Page", 
-    handle: "Trend Wave Green Co.", 
+    handle: "Postrick Green Co.", 
     avatar: "https://picsum.photos/seed/fb-logo-avatar/150/150",
     followers: "82.1K", 
     postsThisMonth: 14,
@@ -87,7 +88,7 @@ const ALL_PLATFORMS_DATA = [
   { 
     id: "youtube", 
     name: "YouTube Brand Channel", 
-    handle: "Trend Wave Solutions", 
+    handle: "Postrick Solutions", 
     avatar: "https://picsum.photos/seed/yt-logo-avatar/150/150",
     followers: "425K", 
     postsThisMonth: 6,
@@ -101,7 +102,7 @@ const ALL_PLATFORMS_DATA = [
   { 
     id: "tiktok", 
     name: "TikTok Creator Account", 
-    handle: "@trendwave_gardening", 
+    handle: "@postrick_gardening", 
     avatar: "https://picsum.photos/seed/tiktok-logo-avatar/150/150",
     followers: "318.2K", 
     postsThisMonth: 22,
@@ -114,7 +115,7 @@ const ALL_PLATFORMS_DATA = [
   { 
     id: "pinterest", 
     name: "Pinterest Boards", 
-    handle: "@trendwave_pins", 
+    handle: "@postrick_pins", 
     avatar: "https://picsum.photos/seed/pin-logo-avatar/150/150",
     followers: "8.9K", 
     postsThisMonth: 15,
@@ -149,23 +150,18 @@ const SIMULATED_AFFECTED_SCHEDULED_POSTS: Record<string, Array<{title: string, d
   ]
 };
 
-export default function TrendWaveAccounts() {
+export default function PostrickAccounts() {
   
-  // Array of currently linked accounts
-  const [connectedList, setConnectedList] = useState<AccountConfig[]>([
-    ALL_PLATFORMS_DATA[0], // Instagram
-    ALL_PLATFORMS_DATA[1], // LinkedIn
-    ALL_PLATFORMS_DATA[2], // Facebook (needs_reauth)
-    ALL_PLATFORMS_DATA[3]  // YouTube (error)
-  ]);
+  // Real active user & workspace references
+  const [workspaceId, setWorkspaceId] = useState<string | null>(null);
+  const [userId, setUserId] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Activity events log
-  const [logs, setLogs] = useState<Array<{ id: string; msg: string; time: string; type: "success" | "warning" | "error" | "info" }>>([
-    { id: "log-1", msg: "Instagram accounts synchronized successfully with your profile", time: "10 mins ago", type: "success" },
-    { id: "log-2", msg: "LinkedIn connection checked and refreshed automatically", time: "1 hour ago", type: "success" },
-    { id: "log-3", msg: "YouTube connection expired: Please sign in again to refresh access", time: "3 hours ago", type: "error" },
-    { id: "log-4", msg: "Facebook requires quick manual authorization to publish", time: "6 hours ago", type: "warning" }
-  ]);
+  // Array of currently linked accounts (starts clean/empty, fetched from DB)
+  const [connectedList, setConnectedList] = useState<AccountConfig[]>([]);
+
+  // Activity events log (starts clean/empty, populated via real operations)
+  const [logs, setLogs] = useState<Array<{ id: string; msg: string; time: string; type: "success" | "warning" | "error" | "info" }>>([]);
   const [isLogsCollapsed, setIsLogsCollapsed] = useState(false);
 
   // Connection settings panel states nested per platform
@@ -173,9 +169,9 @@ export default function TrendWaveAccounts() {
 
   // Defaults form values
   const [defaultsState, setDefaultsState] = useState<Record<string, { tone: string; hashtags: string; tag: string; watermark: boolean }>>({
-    instagram: { tone: "Inspiring & Friendly", hashtags: "#organiclife #consciousgardening #trendwave", tag: "General Public", watermark: true },
+    instagram: { tone: "Inspiring & Friendly", hashtags: "#organiclife #consciousgardening #postrick", tag: "General Public", watermark: true },
     linkedin: { tone: "Professional & Scientific", hashtags: "#sustainableliving #b2borganics #environmental", tag: "Industry Partners", watermark: false },
-    facebook: { tone: "Informative", hashtags: "#growyourown #gogreen #trendwave", tag: "Subscribers", watermark: true },
+    facebook: { tone: "Informative", hashtags: "#growyourown #gogreen #postrick", tag: "Subscribers", watermark: true },
     youtube: { tone: "Educational & Energetic", hashtags: "#gardeningtip #howtostart #sustainablefarming", tag: "All Ages", watermark: true }
   });
 
@@ -209,6 +205,69 @@ export default function TrendWaveAccounts() {
     setLogs(prev => [newLog, ...prev]);
   };
 
+  // 1. Fetch active session and workspace
+  useEffect(() => {
+    async function loadSession() {
+      try {
+        const res = await fetch("/api/auth");
+        if (res.ok) {
+          const data = await res.json();
+          if (data.authenticated && data.profile) {
+            const wId = data.profile.current_workspace_id || data.profile.workspaces?.[0]?.id;
+            setWorkspaceId(wId);
+            setUserId(data.user?.id);
+          }
+        }
+      } catch (err) {
+        console.error("Auth fetch failed in Accounts:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadSession();
+  }, []);
+
+  // 2. Fetch real social accounts for active workspace
+  useEffect(() => {
+    if (!workspaceId) return;
+    async function fetchAccounts() {
+      try {
+        const res = await fetch(`/api/social-accounts?workspaceId=${workspaceId}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.accounts) {
+            const mapped: AccountConfig[] = data.accounts.map((acct: any) => {
+              const matchedPreset = ALL_PLATFORMS_DATA.find(p => p.id === acct.platform);
+              return {
+                id: acct.id,
+                platformId: acct.platform,
+                name: matchedPreset?.name || acct.platform.toUpperCase(),
+                handle: acct.username.startsWith("@") ? acct.username : `@${acct.username}`,
+                avatar: acct.avatar_url || matchedPreset?.avatar || "https://picsum.photos/seed/default/150/150",
+                followers: "0", // Start at 0 to avoid fake production data
+                postsThisMonth: 0,
+                status: "connected",
+                brandColor: matchedPreset?.brandColor || "#10b981",
+                glowColor: matchedPreset?.glowColor || "rgba(16, 185, 129, 0.2)",
+                icon: matchedPreset?.icon || null,
+                textClass: matchedPreset?.textClass || "text-emerald-500"
+              };
+            });
+            setConnectedList(mapped);
+            if (mapped.length > 0) {
+              setLogs([
+                { id: "log-init", msg: `${mapped.length} social account channels retrieved successfully from storage ledger.`, time: "Just now", type: "success" }
+              ]);
+            }
+          }
+        }
+      } catch (err) {
+        console.error("Failed to load accounts:", err);
+      }
+    }
+    fetchAccounts();
+  }, [workspaceId]);
+
   // Re-verify current connections
   const handleReconnect = (account: AccountConfig) => {
     addLogEvent(`Reconnecting and updating permissions for ${account.name}...`, "info");
@@ -230,61 +289,91 @@ export default function TrendWaveAccounts() {
   };
 
   // Disconnect confirmation action
-  const confirmDisconnect = () => {
+  const confirmDisconnect = async () => {
     if (!platformToDisconnect) return;
     const item = platformToDisconnect;
-    setConnectedList(prev => prev.filter(c => c.id !== item.id));
-    addLogEvent(`${item.name} profile connection destroyed. affected scheduled publications flagged.`, "warning");
-    triggerToast(`Disconnected ${item.name} from current Brand workspace.`);
-    setIsDisconnectModalOpen(false);
-    setPlatformToDisconnect(null);
+    try {
+      const response = await fetch(`/api/social-accounts?id=${item.id}`, {
+        method: "DELETE"
+      });
+      if (response.ok) {
+        setConnectedList(prev => prev.filter(c => c.id !== item.id));
+        addLogEvent(`${item.name} profile connection destroyed. affected scheduled publications flagged.`, "warning");
+        triggerToast(`Disconnected ${item.name} from current Brand workspace.`);
+      } else {
+        triggerToast(`Could not delete account. Server returned error.`);
+      }
+    } catch (err) {
+      console.error("Delete account error:", err);
+      triggerToast(`Network error when trying to disconnect account.`);
+    } finally {
+      setIsDisconnectModalOpen(false);
+      setPlatformToDisconnect(null);
+    }
   };
 
   // Connect new or disabled platform from either modal or row
-  const startOAuthFlow = (id: string) => {
+  const startOAuthFlow = async (id: string) => {
     const matched = ALL_PLATFORMS_DATA.find(p => p.id === id);
     if (!matched) return;
+    if (!workspaceId) {
+      triggerToast("Please register or log in to a workspace first to save channels.");
+      setIsConnectModalOpen(false);
+      return;
+    }
     
     setIsConnectModalOpen(false);
     setSimulatingOAuth(id);
 
-    setTimeout(() => {
-      // Create new fresh state clone
-      const newAcc: AccountConfig = {
-        ...matched,
-        status: "connected",
-        errorDetail: undefined
-      };
-
-      // Add to connected list if not already present
-      setConnectedList(prev => {
-        if (prev.some(x => x.id === id)) {
-          // If already inside list but in degraded state, restore it
-          return prev.map(x => x.id === id ? newAcc : x);
-        } else {
-          return [...prev, newAcc];
-        }
+    try {
+      const response = await fetch("/api/social-accounts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          workspaceId,
+          platform: id,
+          platformUserId: `sim-${id}-${Math.random().toString(36).substring(2, 8)}`,
+          username: `postrick_${id}_brand`,
+          avatarUrl: matched.avatar,
+          accessToken: `mock-access-${Math.random().toString(36).substring(2, 10)}`
+        })
       });
 
-      // Default init for default values
-      if (!defaultsState[id]) {
-        setDefaultsState(prev => ({
-          ...prev,
-          [id]: { tone: "Friendly & Casual", hashtags: `#${id}style #consciousliving`, tag: "General Followers", watermark: true }
-        }));
-      }
+      if (response.ok) {
+        const result = await response.json();
+        const acct = result.account;
+        
+        const newAcc: AccountConfig = {
+          id: acct.id,
+          platformId: acct.platform,
+          name: matched.name,
+          handle: acct.username.startsWith("@") ? acct.username : `@${acct.username}`,
+          avatar: acct.avatar_url,
+          followers: "0",
+          postsThisMonth: 0,
+          status: "connected",
+          brandColor: matched.brandColor,
+          glowColor: matched.glowColor,
+          icon: matched.icon,
+          textClass: matched.textClass
+        };
 
-      setSimulationSuccess(newAcc);
+        setConnectedList(prev => [...prev.filter(x => x.platformId !== id), newAcc]);
+        setSimulationSuccess(newAcc);
+        confetti({ particleCount: 60, spread: 50 });
+        addLogEvent(`Connected new authorization channel for ${newAcc.name} handled as ${newAcc.handle}`, "success");
+      } else {
+        triggerToast("Failed to connect account: database insert error");
+      }
+    } catch (err) {
+      console.error("Save account failed:", err);
+      triggerToast("Failed to connect account: network error");
+    } finally {
       setSimulatingOAuth(null);
-      confetti({ particleCount: 60, spread: 50 });
-      addLogEvent(`Connected new authorization channel for ${newAcc.name} handled as ${newAcc.handle}`, "success");
-      
-      // Clean success overlay after 2.5s
       setTimeout(() => {
         setSimulationSuccess(null);
       }, 2500);
-
-    }, 2000);
+    }
   };
 
   const handleUpdateDefaults = (id: string, field: string, value: any) => {
@@ -305,7 +394,7 @@ export default function TrendWaveAccounts() {
 
   // Get currently unconnected platforms
   const unconnectedPlatforms = ALL_PLATFORMS_DATA.filter(
-    item => !connectedList.some(conn => conn.id === item.id)
+    item => !connectedList.some(conn => conn.platformId === item.id)
   );
 
   return (
@@ -348,7 +437,7 @@ export default function TrendWaveAccounts() {
                 <span className="text-[10px] font-mono font-black text-[#117644] uppercase tracking-widest block">OAUTH COMPLETED AUTHORIZED</span>
                 <h3 className="font-serif font-black text-lg text-[#042F1A]">Satisfaction Connected!</h3>
                 <p className="text-xs text-stone-500 leading-normal">
-                  Successfully synchronized <span className="font-bold text-stone-700">{simulationSuccess.name}</span> with secure Trend Wave background workers.
+                  Successfully synchronized <span className="font-bold text-stone-700">{simulationSuccess.name}</span> with secure Postrick background workers.
                 </p>
               </div>
 
@@ -420,6 +509,17 @@ export default function TrendWaveAccounts() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           <AnimatePresence>
+            {connectedList.length === 0 && (
+              <div className="col-span-full py-12 px-6 border-2 border-dashed border-[#eae3d2] rounded-3xl text-center space-y-4 bg-white/40">
+                <div className="mx-auto w-12 h-12 bg-[#FAF5EB] rounded-full flex items-center justify-center text-stone-400 border border-[#eae3d2]">
+                  <Sliders className="w-6 h-6 text-[#117644]" />
+                </div>
+                <div className="space-y-1">
+                  <h4 className="font-serif font-black text-sm text-[#042F1A]">No connected channels yet</h4>
+                  <p className="text-xs text-stone-500 max-w-sm mx-auto">Authorize your active brand profiles above to monitor analytics, coordinate planners, and publish content.</p>
+                </div>
+              </div>
+            )}
             {connectedList.map((account) => {
               const hasDefaultsOpen = activeDefaultsCard === account.id;
               const hasKebabOpen = activeKebabMenu === account.id;
@@ -652,7 +752,7 @@ export default function TrendWaveAccounts() {
                               <ImageIcon className="w-3.5 h-3.5 text-[#117644]" />
                               <div>
                                 <span className="block font-bold text-[#042F1A] leading-none text-[9.5px]">Auto Watermark</span>
-                                <span className="text-[7.5px] text-stone-400 font-mono">APPEND EMBEDDED TREND WAVE LOGO</span>
+                                <span className="text-[7.5px] text-stone-400 font-mono">APPEND EMBEDDED POSTRICK LOGO</span>
                               </div>
                             </div>
 
@@ -752,19 +852,25 @@ export default function TrendWaveAccounts() {
               exit={{ height: 0, opacity: 0 }}
               className="mt-3.5 pt-3.5 border-t overflow-hidden space-y-2.5 max-h-48 overflow-y-auto"
             >
-              {logs.map((log) => (
-                <div key={log.id} className="flex justify-between items-start gap-4 text-[10px] font-sans">
-                  <div className="flex items-start gap-2 text-stone-600">
-                    <span className={`w-1.5 h-1.5 rounded-full mt-1.5 ${
-                      log.type === "success" ? "bg-emerald-500" :
-                      log.type === "warning" ? "bg-amber-500" :
-                      log.type === "error" ? "bg-rose-500" : "bg-blue-500"
-                    }`} />
-                    <span className="font-medium text-stone-700">{log.msg}</span>
-                  </div>
-                  <span className="text-[8.5px] font-mono text-stone-400 uppercase whitespace-nowrap">{log.time}</span>
+              {logs.length === 0 ? (
+                <div className="text-center py-4 text-[10.5px] text-stone-400 font-medium">
+                  No recent activity logged. Connect a social account above to get started.
                 </div>
-              ))}
+              ) : (
+                logs.map((log) => (
+                  <div key={log.id} className="flex justify-between items-start gap-4 text-[10px] font-sans">
+                    <div className="flex items-start gap-2 text-stone-600">
+                      <span className={`w-1.5 h-1.5 rounded-full mt-1.5 ${
+                        log.type === "success" ? "bg-emerald-500" :
+                        log.type === "warning" ? "bg-amber-500" :
+                        log.type === "error" ? "bg-rose-500" : "bg-blue-500"
+                      }`} />
+                      <span className="font-medium text-stone-700">{log.msg}</span>
+                    </div>
+                    <span className="text-[8.5px] font-mono text-stone-400 uppercase whitespace-nowrap">{log.time}</span>
+                  </div>
+                ))
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -830,7 +936,7 @@ export default function TrendWaveAccounts() {
               <div className="p-3 bg-white rounded-xl border flex items-start gap-2.5 text-left text-[10px] text-stone-500">
                 <Shield className="w-4.5 h-4.5 text-[#117644] flex-shrink-0 mt-0.5" />
                 <span className="leading-snug">
-                  By completing authorize flows, you grant Trend Wave secure client credentials to dispatch automated campaigns. Connections may be fully disconnected at any time.
+                  By completing authorize flows, you grant Postrick secure client credentials to dispatch automated campaigns. Connections may be fully disconnected at any time.
                 </span>
               </div>
             </motion.div>
