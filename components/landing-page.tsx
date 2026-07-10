@@ -766,7 +766,7 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               initial={{ opacity: 0, y: 25 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="text-sm sm:text-[17px] max-w-2xl leading-relaxed text-black dark:text-black font-extrabold px-2 mt-4"
+              className="text-sm sm:text-[17px] max-w-2xl leading-relaxed text-black dark:text-white font-extrabold px-2 mt-4"
             >
               Automate multi-platform scheduling based on customer behavior. Reach the right subscribers on YouTube, Instagram, Facebook, and TikTok with high-impact precision campaigns.
             </motion.p>
@@ -1158,8 +1158,8 @@ export default function LandingPage({ onEnterApp, isDarkMode }: LandingPageProps
               onClick={() => setBillingPeriod("monthly")}
               className={`cursor-pointer transition-all ${
                 billingPeriod === "monthly" 
-                  ? "text-black dark:text-black font-black text-[14px] border-b-2 border-black pb-0.5 opacity-100" 
-                  : "text-black dark:text-black font-extrabold opacity-100 hover:opacity-100 text-[13px]"
+                  ? "text-black dark:text-white font-black text-[14px] border-b-2 border-black dark:border-white pb-0.5 opacity-100" 
+                  : "text-black/80 dark:text-neutral-300 font-extrabold opacity-100 hover:opacity-100 text-[13px]"
               }`}
             >
               Monthly Billing

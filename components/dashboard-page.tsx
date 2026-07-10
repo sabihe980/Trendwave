@@ -392,6 +392,68 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
     linkedin: false
   });
 
+  const [isComposerDragOver, setIsComposerDragOver] = useState(false);
+  const [isPublisherDragOver, setIsPublisherDragOver] = useState(false);
+
+  // ==========================================
+  // AUTO-SAVE FEATURE FOR POST COMPOSER DRAFT
+  // ==========================================
+  const [autoSaveStatus, setAutoSaveStatus] = useState<string>("");
+  const [isComposerHydrated, setIsComposerHydrated] = useState<boolean>(false);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const savedCaption = localStorage.getItem("postrick_composer_caption");
+      const savedMedia = localStorage.getItem("postrick_composer_media");
+      const savedSelectedMediaId = localStorage.getItem("postrick_composer_selected_media_id");
+
+      if (savedCaption !== null) {
+        setPlatformCaption(savedCaption);
+      }
+      if (savedMedia !== null) {
+        try {
+          const parsedMedia = JSON.parse(savedMedia);
+          if (Array.isArray(parsedMedia) && parsedMedia.length > 0) {
+            setUploadedMedia(parsedMedia);
+          }
+        } catch (e) {
+          console.error("Error parsing saved media draft:", e);
+        }
+      }
+      if (savedSelectedMediaId !== null) {
+        setSelectedMediaId(savedSelectedMediaId);
+      }
+      setIsComposerHydrated(true);
+    }
+  }, []);
+
+  // Periodic/debounced auto-save to localStorage
+  useEffect(() => {
+    if (!isComposerHydrated || typeof window === "undefined") return;
+
+    setAutoSaveStatus("Saving...");
+    
+    const handler = setTimeout(() => {
+      try {
+        localStorage.setItem("postrick_composer_caption", platformCaption);
+        localStorage.setItem("postrick_composer_media", JSON.stringify(uploadedMedia));
+        localStorage.setItem("postrick_composer_selected_media_id", selectedMediaId);
+        
+        const now = new Date();
+        const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        setAutoSaveStatus(`Saved at ${timeString}`);
+      } catch (e) {
+        console.error("Failed to auto-save to localStorage:", e);
+        setAutoSaveStatus("Save error");
+      }
+    }, 1500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [platformCaption, uploadedMedia, selectedMediaId, isComposerHydrated]);
+
   // 📅 Weekly Content Calendar Rich States
   const [calendarView, setCalendarView] = useState<"week" | "day" | "list">("list");
   const [calendarPlatformFilter, setCalendarPlatformFilter] = useState<string[]>([
@@ -2861,6 +2923,16 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                       <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
                       Cross-Platform Sync: Live
                     </span>
+                    {autoSaveStatus && (
+                      <span className={`text-[9px] font-mono font-black px-3.5 py-1.5 rounded-full border uppercase select-none tracking-widest flex items-center gap-1.5 transition-all ${
+                        autoSaveStatus.startsWith("Saved")
+                          ? "bg-emerald-50 text-[#117644] border-emerald-100"
+                          : "bg-amber-50 text-[#b45309] border-amber-100 animate-pulse"
+                      }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${autoSaveStatus.startsWith("Saved") ? "bg-emerald-500" : "bg-amber-500"}`} />
+                        {autoSaveStatus}
+                      </span>
+                    )}
                   </div>
                 </div>
                 {/* Simplified Single Screen Composer Workspace */}
@@ -3128,15 +3200,27 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                         </div>
                       )}
 
-                      <div 
+                      <motion.div 
                         onClick={() => document.getElementById("hidden-file-input-composer")?.click()}
                         onDragOver={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          setIsComposerDragOver(true);
+                        }}
+                        onDragEnter={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsComposerDragOver(true);
+                        }}
+                        onDragLeave={(e) => {
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsComposerDragOver(false);
                         }}
                         onDrop={(e) => {
                           e.preventDefault();
                           e.stopPropagation();
+                          setIsComposerDragOver(false);
                           if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                             const filesArr = Array.from(e.dataTransfer.files);
                             const mediaFiles = filesArr.filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
@@ -3154,7 +3238,13 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                             }
                           }
                         }}
-                        className="border-2 border-dashed border-[#eae3d2] hover:border-[#117644] hover:bg-[#117644]/5 bg-[#FAF5EB]/10 p-4 rounded-2xl text-center cursor-pointer transition-all space-y-1"
+                        animate={{
+                          scale: isComposerDragOver ? 1.04 : 1.0,
+                          borderColor: isComposerDragOver ? "#117644" : "#eae3d2",
+                          backgroundColor: isComposerDragOver ? "rgba(17, 118, 68, 0.12)" : "rgba(250, 245, 235, 0.1)",
+                        }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="border-2 border-dashed p-4 rounded-2xl text-center cursor-pointer transition-all space-y-1 relative overflow-hidden"
                       >
                         <input 
                           id="hidden-file-input-composer"
@@ -3178,11 +3268,25 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                             }
                           }}
                         />
-                        <div className="mx-auto w-8 h-8 rounded-full bg-[#117644]/15 text-[#117644] flex items-center justify-center">
+                        <motion.div 
+                          animate={{
+                            y: isComposerDragOver ? -4 : 0,
+                            scale: isComposerDragOver ? 1.15 : 1.0,
+                          }}
+                          transition={{ duration: 0.2 }}
+                          className="mx-auto w-8 h-8 rounded-full bg-[#117644]/15 text-[#117644] flex items-center justify-center"
+                        >
                           <Upload className="w-4 h-4" />
-                        </div>
-                        <p className="text-[11px] font-bold text-[#042F1A]">Drag &amp; drop files here, or click to browse</p>
-                      </div>
+                        </motion.div>
+                        <motion.p 
+                          animate={{
+                            color: isComposerDragOver ? "#117644" : "#042F1A",
+                          }}
+                          className="text-[11px] font-bold"
+                        >
+                          {isComposerDragOver ? "Drop files to attach!" : "Drag & drop files here, or click to browse"}
+                        </motion.p>
+                      </motion.div>
 
                       {uploadedMedia.length > 0 && (
                         <div className="flex gap-1.5 overflow-x-auto py-1">
@@ -3391,15 +3495,27 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                             <label className="block font-mono text-[9px] uppercase font-black tracking-widest text-[#117644]">
                               Attach Media (Local Device)
                             </label>
-                            <div 
+                            <motion.div 
                               onClick={() => document.getElementById("hidden-file-input-publish")?.click()}
                               onDragOver={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                setIsPublisherDragOver(true);
+                              }}
+                              onDragEnter={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsPublisherDragOver(true);
+                              }}
+                              onDragLeave={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                setIsPublisherDragOver(false);
                               }}
                               onDrop={(e) => {
                                 e.preventDefault();
                                 e.stopPropagation();
+                                setIsPublisherDragOver(false);
                                 if (e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files.length > 0) {
                                   const filesArr = Array.from(e.dataTransfer.files);
                                   const mediaFiles = filesArr.filter(f => f.type.startsWith("image/") || f.type.startsWith("video/"));
@@ -3418,7 +3534,13 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                   }
                                 }
                               }}
-                              className="border-2 border-dashed border-[#eae3d2] hover:border-[#117644] bg-[#FAF5EB]/10 hover:bg-[#117644]/5 p-6 rounded-2xl text-center cursor-pointer transition-all space-y-2 group"
+                              animate={{
+                                scale: isPublisherDragOver ? 1.04 : 1.0,
+                                borderColor: isPublisherDragOver ? "#117644" : "#eae3d2",
+                                backgroundColor: isPublisherDragOver ? "rgba(17, 118, 68, 0.12)" : "rgba(250, 245, 235, 0.1)",
+                              }}
+                              transition={{ duration: 0.2, ease: "easeOut" }}
+                              className="border-2 border-dashed p-6 rounded-2xl text-center cursor-pointer transition-all space-y-2 group relative overflow-hidden"
                             >
                               <input 
                                 id="hidden-file-input-publish"
@@ -3443,14 +3565,28 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                   }
                                 }}
                               />
-                              <div className="mx-auto w-10 h-10 rounded-full bg-[#117644]/15 text-[#117644] flex items-center justify-center group-hover:scale-110 transition-transform">
+                              <motion.div 
+                                animate={{
+                                  y: isPublisherDragOver ? -4 : 0,
+                                  scale: isPublisherDragOver ? 1.15 : 1.0,
+                                }}
+                                transition={{ duration: 0.2 }}
+                                className="mx-auto w-10 h-10 rounded-full bg-[#117644]/15 text-[#117644] flex items-center justify-center group-hover:scale-110 transition-transform"
+                              >
                                 <Upload className="w-5 h-5" />
-                              </div>
+                              </motion.div>
                               <div>
-                                <p className="text-xs font-bold text-[#042F1A]">Drag &amp; drop files here</p>
+                                <motion.p 
+                                  animate={{
+                                    color: isPublisherDragOver ? "#117644" : "#042F1A",
+                                  }}
+                                  className="text-xs font-bold"
+                                >
+                                  {isPublisherDragOver ? "Drop files to attach!" : "Drag & drop files here"}
+                                </motion.p>
                                 <p className="text-[10px] text-neutral-400">or click to browse local devices</p>
                               </div>
-                            </div>
+                            </motion.div>
                           </div>
                         )}
 
@@ -4022,6 +4158,24 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                   🌿
                                 </button>
                               </div>
+                              <button
+                                type="button"
+                                title="Reset caption and media to default"
+                                onClick={() => {
+                                  if (confirm("Are you sure you want to reset your composer draft? This will clear your custom caption and media.")) {
+                                    setPlatformCaption("");
+                                    setUploadedMedia([]);
+                                    setSelectedMediaId("");
+                                    localStorage.removeItem("postrick_composer_caption");
+                                    localStorage.removeItem("postrick_composer_media");
+                                    localStorage.removeItem("postrick_composer_selected_media_id");
+                                    setAutoSaveStatus("Draft Reset");
+                                  }
+                                }}
+                                className="text-[10px] text-red-600 hover:text-red-800 font-mono font-black uppercase tracking-wider px-2 py-1 rounded hover:bg-red-50 transition-colors cursor-pointer border-none bg-transparent"
+                              >
+                                ✕ Reset Draft
+                              </button>
                             </div>
                             
                             <textarea

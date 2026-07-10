@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { 
   Sparkles, Check, ArrowRight, ArrowLeft, Users, Zap, 
-  Calendar, Send, BarChart3, Clock, Layout, MessageSquare, Info, Star,
-  Smartphone, Monitor, ChevronRight, CheckCircle2, AlertCircle, Play, 
-  Settings, Mail, Globe, Lock, User, Eye, EyeOff, Building, Heart, Laptop
+  Layout, MessageSquare, Info, Star,
+  Smartphone, Clock, Laptop, CheckCircle2, AlertCircle, 
+  Eye, EyeOff, BarChart3, Building, User, Lock, Mail, Globe
 } from "lucide-react";
 import confetti from "canvas-confetti";
 import { Youtube, Facebook, Instagram, Linkedin, PostrickLogo } from "./icons";
@@ -37,18 +37,9 @@ const PRESET_AVATARS = [
   "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&q=80"
 ];
 
-// Steps enumeration
-// Step 1: EMAIL & PASSWORD (Create Account)
-// Step 2: PERSONALIZED WELCOME SCREEN
-// Step 3: DESCRIBE YOURSELF
-// Step 4: TOOLS FOR SOCIAL MEDIA
-// Step 5: SOCIAL MEDIA MANAGEMENT (Section A: count + Section B: channels focus)
-// Step 6: DISCOVER POSTRICK (Interactive Carousel)
-// Step 7: MARKETING ATTRIBUTION
-// Step 8: FINAL COMPLETION SCREEN
-
-export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: OnboardingWizardProps) {
+export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizardProps) {
   const [currentStep, setCurrentStep] = useState(0);
+  const [onbSubStep, setOnbSubStep] = useState(0);
   const [direction, setDirection] = useState(1);
   const [validationError, setValidationError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -177,29 +168,34 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
   const handleNext = async () => {
     setValidationError(null);
 
-    // Step 1: Create Account Validation
+    // Step 1: Create Account Validation (now split into Sub-step 0: Account, Sub-step 1: Workspace details)
     if (currentStep === 0) {
-      if (!fullName.trim()) {
-        setValidationError("Please provide your full name to personalize your welcome banner.");
+      if (onbSubStep === 0) {
+        if (!email.trim() || !email.includes("@")) {
+          setValidationError("Please provide a valid corporate email address.");
+          return;
+        }
+        if (password.length < 6) {
+          setValidationError("Your secure password must be at least 6 characters long.");
+          return;
+        }
+        setOnbSubStep(1);
         return;
-      }
-      if (!businessName.trim()) {
-        setValidationError("Please enter your organization or brand workspace name.");
-        return;
-      }
-      if (!email.trim() || !email.includes("@")) {
-        setValidationError("Please provide a valid corporate email address.");
-        return;
-      }
-      if (password.length < 6) {
-        setValidationError("Your secure password must be at least 6 characters long.");
-        return;
-      }
+      } else {
+        if (!fullName.trim()) {
+          setValidationError("Please provide your full name to personalize your welcome banner.");
+          return;
+        }
+        if (!businessName.trim()) {
+          setValidationError("Please enter your organization or brand workspace name.");
+          return;
+        }
 
-      // Simulate signup API delay (micro-interaction)
-      setIsLoading(true);
-      await new Promise((resolve) => setTimeout(resolve, 800));
-      setIsLoading(false);
+        // Simulate signup API delay (micro-interaction)
+        setIsLoading(true);
+        await new Promise((resolve) => setTimeout(resolve, 800));
+        setIsLoading(false);
+      }
     }
 
     // Step 3: Describe Yourself Validation
@@ -269,6 +265,10 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
 
   const handlePrev = () => {
     setValidationError(null);
+    if (currentStep === 0 && onbSubStep === 1) {
+      setOnbSubStep(0);
+      return;
+    }
     if (currentStep > 0) {
       setDirection(-1);
       const prevStep = currentStep - 1;
@@ -292,7 +292,7 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
     });
 
     onComplete({
-      userName: fullName || "Sabeeh",
+      userName: fullName || "Ahmed",
       workspaceName: businessName || "Savvy Monarch",
       brandColors: ["#042F1A", "#C5E729"],
       brandLogo: PRESET_AVATARS[0],
@@ -349,24 +349,23 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
       desc: "An enterprise-grade social command center designed to centralize and visualize your publishing queues across multi-platform node configurations.",
       benefit: "Saves up to 12 hours of weekly platform jumping.",
       metric: "100% Queue Visibility",
-      img: "/auto_publish.jpg",
       renderMock: (
-        <div className="w-full h-full flex flex-col justify-between p-4 font-mono text-[9px] bg-[#FAF6EE] dark:bg-neutral-900 border border-[#eae3d2] dark:border-neutral-800 rounded-2xl">
-          <div className="flex items-center justify-between pb-2 border-b border-[#eae3d2] dark:border-neutral-800">
-            <span className="font-bold flex items-center gap-1.5 text-[#117644]"><Layout className="w-3 h-3" /> dispatch_pipeline</span>
-            <span className="text-[8px] bg-[#117644]/10 text-[#117644] px-1.5 py-0.5 rounded-md font-sans">Active</span>
+        <div className="w-full h-full flex flex-col justify-between p-4 font-mono text-[9px] bg-neutral-900 border border-neutral-800 rounded-2xl">
+          <div className="flex items-center justify-between pb-2 border-b border-neutral-800">
+            <span className="font-bold flex items-center gap-1.5 text-[#C5E729]"><Layout className="w-3 h-3" /> dispatch_pipeline</span>
+            <span className="text-[8px] bg-[#117644]/20 text-[#C5E729] px-1.5 py-0.5 rounded-md font-sans">Active</span>
           </div>
           <div className="space-y-1.5 py-2">
-            <div className="p-1.5 bg-white dark:bg-neutral-800 border border-[#eae3d2] dark:border-neutral-700 rounded-lg flex items-center justify-between">
-              <span className="font-semibold text-[#042F1A] dark:text-neutral-200">Reels Campaign Draft #4</span>
-              <span className="text-stone-400">12:00 PM (Auto)</span>
+            <div className="p-1.5 bg-neutral-850 border border-neutral-800 rounded-lg flex items-center justify-between">
+              <span className="font-semibold text-neutral-200">Reels Campaign Draft #4</span>
+              <span className="text-stone-500">12:00 PM (Auto)</span>
             </div>
-            <div className="p-1.5 bg-white dark:bg-neutral-800 border border-[#eae3d2] dark:border-neutral-700 rounded-lg flex items-center justify-between">
-              <span className="font-semibold text-[#042F1A] dark:text-neutral-200">LinkedIn Authority Article</span>
-              <span className="text-stone-400">3:30 PM (Peak)</span>
+            <div className="p-1.5 bg-neutral-850 border border-neutral-800 rounded-lg flex items-center justify-between">
+              <span className="font-semibold text-neutral-200">LinkedIn Authority Article</span>
+              <span className="text-stone-500">3:30 PM (Peak)</span>
             </div>
           </div>
-          <div className="text-[8px] text-stone-500 dark:text-stone-400 text-center italic">
+          <div className="text-[8px] text-stone-500 text-center italic">
             Visual workspace buffers optimized for organic performance indices.
           </div>
         </div>
@@ -377,23 +376,22 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
       desc: "Write once, optimize universally. Instantly rewrite captions, adapt tone formatting, inject trending hashtags, and conform to strict platform rules dynamically.",
       benefit: "Slashes copywriting latency by over 80%.",
       metric: "5 Distinct Tones",
-      img: "/ai_caption.jpg",
       renderMock: (
-        <div className="w-full h-full flex flex-col justify-between p-4 font-mono text-[9.5px] bg-[#FAF6EE] dark:bg-neutral-900 border border-[#eae3d2] dark:border-neutral-800 rounded-2xl">
+        <div className="w-full h-full flex flex-col justify-between p-4 font-mono text-[9.5px] bg-neutral-900 border border-neutral-800 rounded-2xl">
           <div className="space-y-1.5">
-            <div className="text-[8px] text-stone-400 uppercase tracking-widest font-extrabold">Original Input</div>
-            <p className="p-1.5 bg-white dark:bg-neutral-800 rounded-lg text-stone-600 dark:text-neutral-300 border border-[#eae3d2] dark:border-neutral-800">
+            <div className="text-[8px] text-stone-500 uppercase tracking-widest font-extrabold">Original Input</div>
+            <p className="p-1.5 bg-neutral-850 rounded-lg text-neutral-300 border border-neutral-800">
               &ldquo;We made a new sustainable product check it out link in bio&rdquo;
             </p>
           </div>
-          <div className="flex justify-center my-1 text-[#117644] dark:text-[#C5E729]">
+          <div className="flex justify-center my-1 text-[#C5E729]">
             <Sparkles className="w-4 h-4 animate-spin" />
           </div>
           <div className="space-y-1.5">
-            <div className="text-[8px] text-[#117644] uppercase tracking-widest font-extrabold flex items-center gap-1">
+            <div className="text-[8px] text-[#C5E729] uppercase tracking-widest font-extrabold flex items-center gap-1">
               <Zap className="w-2.5 h-2.5" /> Postrick Professional Optimized
             </div>
-            <p className="p-1.5 bg-[#117644]/5 dark:bg-[#C5E729]/5 border border-[#117644]/20 dark:border-[#C5E729]/20 rounded-lg text-[#042F1A] dark:text-neutral-200 leading-relaxed font-semibold">
+            <p className="p-1.5 bg-[#C5E729]/5 border border-[#C5E729]/20 rounded-lg text-neutral-200 leading-relaxed font-semibold">
               &ldquo;🌱 Redefining product longevity. Introducing our newest circular design, optimized to shrink carbon footprints by 30%. Link in bio. #Sustainability #EcoConscious&rdquo;
             </p>
           </div>
@@ -405,28 +403,27 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
       desc: "Take the guesswork out of publishing timelines. Postrick analyzes global engagement trends to orchestrate dispatch loops when active subscribers peak.",
       benefit: "Increases average post interactions by 42%.",
       metric: "True Engagement Peak",
-      img: "/schedule_calendar.jpg",
       renderMock: (
-        <div className="w-full h-full flex flex-col justify-between p-4 font-mono text-[9px] bg-[#FAF6EE] dark:bg-neutral-900 border border-[#eae3d2] dark:border-neutral-800 rounded-2xl">
-          <div className="flex items-center gap-1.5 text-stone-700 dark:text-neutral-300 font-bold border-b pb-1.5 border-[#eae3d2] dark:border-neutral-800">
-            <Clock className="w-3.5 h-3.5 text-[#117644]" />
+        <div className="w-full h-full flex flex-col justify-between p-4 font-mono text-[9px] bg-neutral-900 border border-neutral-800 rounded-2xl">
+          <div className="flex items-center gap-1.5 text-neutral-300 font-bold border-b pb-1.5 border-neutral-800">
+            <Clock className="w-3.5 h-3.5 text-[#C5E729]" />
             <span>Optimal Publishing Nodes</span>
           </div>
           <div className="space-y-2 py-2">
             <div className="flex items-center justify-between">
-              <span className="text-[#042F1A] dark:text-neutral-200">Instagram Feed</span>
-              <span className="text-[#117644] font-extrabold bg-[#117644]/10 dark:bg-emerald-500/10 px-2 py-0.5 rounded">12:30 PM (Peak)</span>
+              <span className="text-neutral-200">Instagram Feed</span>
+              <span className="text-[#C5E729] font-extrabold bg-[#117644]/20 px-2 py-0.5 rounded">12:30 PM (Peak)</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#042F1A] dark:text-neutral-200">LinkedIn Business</span>
-              <span className="text-[#117644] font-extrabold bg-[#117644]/10 dark:bg-emerald-500/10 px-2 py-0.5 rounded">09:15 AM (Peak)</span>
+              <span className="text-neutral-200">LinkedIn Business</span>
+              <span className="text-[#C5E729] font-extrabold bg-[#117644]/20 px-2 py-0.5 rounded">09:15 AM (Peak)</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-[#042F1A] dark:text-neutral-200">TikTok Short</span>
-              <span className="text-[#117644] font-extrabold bg-[#117644]/10 dark:bg-emerald-500/10 px-2 py-0.5 rounded">06:45 PM (Peak)</span>
+              <span className="text-neutral-200">TikTok Short</span>
+              <span className="text-[#C5E729] font-extrabold bg-[#117644]/20 px-2 py-0.5 rounded">06:45 PM (Peak)</span>
             </div>
           </div>
-          <div className="text-[8px] bg-emerald-500/10 dark:bg-emerald-950/20 text-emerald-700 dark:text-emerald-300 p-1 rounded-md text-center font-semibold">
+          <div className="text-[8px] bg-[#117644]/20 text-[#C5E729] p-1 rounded-md text-center font-semibold">
             Synchronized reels formats mapped automatically.
           </div>
         </div>
@@ -437,21 +434,20 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
       desc: "Monitor core metrics, audit campaigns, and view follower expansion analytics across all networks side-by-side with beautiful vector dashboards.",
       benefit: "Consolidates multi-platform audits into one PDF view.",
       metric: "Real-time Metrics Tracking",
-      img: "/analytics_desk_flatlay.jpg",
       renderMock: (
-        <div className="w-full h-full flex flex-col justify-between p-4 font-mono text-[9px] bg-[#FAF6EE] dark:bg-neutral-900 border border-[#eae3d2] dark:border-neutral-800 rounded-2xl">
-          <div className="flex items-center justify-between border-b pb-1.5 border-[#eae3d2] dark:border-neutral-800">
-            <span className="font-bold text-stone-700 dark:text-neutral-300 flex items-center gap-1"><BarChart3 className="w-3.5 h-3.5" /> organic_growth</span>
-            <span className="text-emerald-600 font-extrabold">+24.8% This Month</span>
+        <div className="w-full h-full flex flex-col justify-between p-4 font-mono text-[9px] bg-neutral-900 border border-neutral-800 rounded-2xl">
+          <div className="flex items-center justify-between border-b pb-1.5 border-neutral-800">
+            <span className="font-bold text-neutral-300 flex items-center gap-1"><BarChart3 className="w-3.5 h-3.5" /> organic_growth</span>
+            <span className="text-emerald-400 font-extrabold">+24.8% This Month</span>
           </div>
           <div className="py-2 flex items-end justify-between h-16 px-4">
-            <div className="w-3 bg-stone-300 dark:bg-neutral-700 h-[30%] rounded-sm" />
-            <div className="w-3 bg-stone-300 dark:bg-neutral-700 h-[45%] rounded-sm" />
-            <div className="w-3 bg-[#117644] dark:bg-[#C5E729] h-[75%] rounded-sm animate-pulse" />
-            <div className="w-3 bg-stone-300 dark:bg-neutral-700 h-[60%] rounded-sm" />
-            <div className="w-3 bg-[#117644] dark:bg-[#C5E729] h-[95%] rounded-sm animate-pulse" />
+            <div className="w-3 bg-neutral-800 h-[30%] rounded-sm" />
+            <div className="w-3 bg-neutral-800 h-[45%] rounded-sm" />
+            <div className="w-3 bg-[#117644] h-[75%] rounded-sm animate-pulse" />
+            <div className="w-3 bg-neutral-800 h-[60%] rounded-sm" />
+            <div className="w-3 bg-[#C5E729] h-[95%] rounded-sm animate-pulse" />
           </div>
-          <div className="flex justify-between text-[8px] text-stone-400">
+          <div className="flex justify-between text-[8px] text-stone-500">
             <span>May 15</span>
             <span>Jun 15</span>
             <span>Jul 15</span>
@@ -477,83 +473,48 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
   ];
 
   return (
-    <div className={`fixed inset-0 z-[9999] overflow-y-auto flex items-center justify-center p-3 sm:p-4 md:p-6 transition-all duration-300 ${
-      isDarkMode ? "bg-[#02180c]/95" : "bg-[#FAF6EE]/90"
-    } backdrop-blur-md font-sans antialiased`}>
-      
+    <div className="fixed inset-0 z-[9999] bg-[#02140b] overflow-y-auto flex items-center justify-center p-4 font-sans antialiased">
+      {/* Subtle brand grid pattern overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(17,118,68,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(17,118,68,0.07)_1px,transparent_1px)] bg-[size:32px_32px] pointer-events-none opacity-40" />
+
       {/* Dynamic Background Blurs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-50">
-        <div className={`absolute top-0 left-0 w-96 h-96 rounded-full blur-[120px] transition-colors duration-1000 ${
-          isDarkMode ? "bg-[#117644]/15" : "bg-[#117644]/10"
-        }`} />
-        <div className={`absolute bottom-0 right-0 w-96 h-96 rounded-full blur-[120px] transition-colors duration-1000 ${
-          isDarkMode ? "bg-[#C5E729]/10" : "bg-[#C5E729]/15"
-        }`} />
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-60">
+        <div className="absolute top-[-20%] left-[-20%] w-[60%] h-[60%] rounded-full bg-[#117644]/20 blur-[130px]" />
+        <div className="absolute bottom-[-20%] right-[-20%] w-[60%] h-[60%] rounded-full bg-[#C5E729]/10 blur-[130px]" />
       </div>
 
-      {/* Main Form Box Container */}
-      <motion.div
-        initial={{ scale: 0.97, opacity: 0, y: 15 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 28 }}
-        className={`relative w-full max-w-[650px] md:max-w-[700px] rounded-[28px] md:rounded-[36px] shadow-2xl border flex flex-col overflow-hidden max-h-[95vh] ${
-          isDarkMode 
-            ? "bg-[#031d10] border-[#115e34] text-[#FAF6EE]" 
-            : "bg-white border-[#b0a487]/50 text-[#042F1A]"
-        }`}
-      >
-        {/* TOP STATUS BAR */}
-        <div className={`flex items-center justify-between p-4 md:p-5 border-b flex-shrink-0 ${
-          isDarkMode ? "border-[#115e34]/30" : "border-[#b0a487]/20"
-        }`}>
-          <div className="flex items-center gap-3">
-            <PostrickLogo className="w-7 h-7" color="#117644" bgStrokeColor={isDarkMode ? "#031d10" : "#FAF6EE"} />
-            <div>
-              <h3 className="font-serif text-sm font-black tracking-tight leading-none text-[#042F1A] dark:text-white">Postrick</h3>
-              <p className="text-[9px] font-mono uppercase tracking-widest font-extrabold text-[#117644] dark:text-[#C5E729] mt-1">
-                Workspace Onboarding Setup
-              </p>
-            </div>
-          </div>
+      {/* Ultra-elegant thin progress bar at the very top of the page */}
+      <div className="fixed top-0 left-0 right-0 h-1 bg-[#115e34]/30 z-[10000]">
+        <motion.div 
+          className="h-full bg-[#C5E729]" 
+          animate={{ width: `${progressPercent}%` }}
+          transition={{ duration: 0.3 }}
+        />
+      </div>
 
-          <div className="flex items-center gap-4">
-            <div className="hidden sm:flex items-center gap-2">
-              <span className="text-[10px] font-mono font-bold text-stone-400">Progress</span>
-              <div className="w-20 h-1.5 bg-neutral-100 dark:bg-neutral-900 rounded-full overflow-hidden">
-                <motion.div 
-                  className="h-full bg-[#117644] dark:bg-[#C5E729]" 
-                  animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 0.3 }}
-                />
-              </div>
-              <span className="text-[10px] font-mono font-bold text-[#117644] dark:text-[#C5E729]">
-                {progressPercent}%
-              </span>
-            </div>
+      {/* Skip Button at the very top right */}
+      {currentStep < TOTAL_STEPS - 1 && (
+        <button 
+          onClick={onSkip}
+          className="fixed top-5 right-5 text-xs font-mono font-bold tracking-widest text-[#C5E729] hover:text-white uppercase transition-colors z-[10000] cursor-pointer"
+        >
+          Skip Onboarding &rarr;
+        </button>
+      )}
 
-            {currentStep < TOTAL_STEPS - 1 && (
-              <button 
-                onClick={onSkip}
-                className="text-[10px] font-bold font-mono tracking-wider text-stone-400 hover:text-[#117644] dark:hover:text-[#C5E729] uppercase transition-all py-1.5 px-3 rounded-lg hover:bg-neutral-100 dark:hover:bg-neutral-800"
-              >
-                Skip Onboarding &rarr;
-              </button>
-            )}
-          </div>
-        </div>
-
-        {/* VALIDATION ERROR BANNERS */}
+      {/* Main Single Column Dynamic Centered Wrapper */}
+      <div className={`w-full transition-all duration-300 z-10 py-8 ${
+        currentStep === 5 ? "max-w-[620px]" : currentStep === 4 ? "max-w-[500px]" : "max-w-[420px]"
+      }`}>
+        
+        {/* VALIDATION ERROR BANNER */}
         <AnimatePresence>
           {validationError && (
             <motion.div 
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: "auto", opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              className={`px-5 py-3 border-b flex items-center gap-2.5 text-xs font-semibold ${
-                isDarkMode 
-                  ? "bg-rose-950/30 border-[#115e34]/30 text-rose-200" 
-                  : "bg-rose-50 border-rose-100 text-rose-700"
-              }`}
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="mb-5 p-3 rounded-lg bg-rose-950/40 border border-rose-500/20 text-rose-200 text-xs font-semibold flex items-center gap-2.5"
             >
               <AlertCircle className="w-4 h-4 text-rose-500 flex-shrink-0" />
               <span>{validationError}</span>
@@ -561,702 +522,772 @@ export default function OnboardingWizard({ onComplete, onSkip, isDarkMode }: Onb
           )}
         </AnimatePresence>
 
-        {/* CONTENT CANVAS (SCROLLABLE) */}
-        <div className="flex-1 overflow-y-auto p-5 sm:p-7 md:p-9">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={currentStep}
-              initial={{ opacity: 0, x: direction * 15 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -direction * 15 }}
-              transition={{ duration: 0.25 }}
-              className="space-y-6"
-            >
-              {/* STEP 1: EMAIL & PASSWORD (Create Account) */}
-              {currentStep === 0 && (
-                <div className="space-y-5 text-left">
-                  <div className="space-y-1">
-                    <h2 className="font-serif text-xl sm:text-2xl font-black text-[#042F1A] dark:text-white leading-tight">
-                      Let&apos;s build your professional account
-                    </h2>
-                    <p className="text-xs text-stone-500 dark:text-neutral-300 font-medium">
-                      Enter your workspace details below to secure your visual marketing console.
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={`${currentStep}-${onbSubStep}`}
+            initial={{ opacity: 0, y: 15 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -15 }}
+            transition={{ duration: 0.25 }}
+            className="w-full flex flex-col"
+          >
+            {/* LOGO (Centered at top) */}
+            <div className="flex flex-col items-center mb-8">
+              <div className="flex items-center gap-2.5">
+                <PostrickLogo className="w-8 h-8" color="#C5E729" bgStrokeColor="#02140b" />
+                <span className="font-sans text-xl font-bold text-white tracking-tight">Postrick</span>
+              </div>
+            </div>
+
+            {/* STEP CONTENT SWITCHBOARD */}
+            
+            {/* STEP 1: EMAIL & PASSWORD (Create Account) */}
+            {currentStep === 0 && (
+              <div className="text-left w-full">
+                {onbSubStep === 0 ? (
+                  /* SUB-STEP A: ACTUAL REPLICA OF THE BUFFER SIGNUP SCREEN */
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <h2 className="text-[32px] font-sans font-semibold text-white tracking-tight leading-tight">
+                        Create account
+                      </h2>
+                      <p className="text-sm text-stone-400 font-medium">
+                        Already have an account? <span onClick={onSkip} className="text-[#C5E729] hover:underline cursor-pointer font-semibold transition-colors">Log in instead</span>
+                      </p>
+                    </div>
+
+                    <div className="space-y-4 pt-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-stone-300 mb-2">
+                          Email
+                        </label>
+                        <input 
+                          id="onb-email"
+                          type="email" 
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          placeholder="name@company.com"
+                          className="w-full bg-[#031d10]/90 border border-[#115e34]/50 rounded-lg px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-[#C5E729] focus:ring-1 focus:ring-[#C5E729]/30 transition-all text-sm font-sans"
+                        />
+                      </div>
+
+                      <div>
+                        <div className="flex justify-between items-center mb-2">
+                          <label className="block text-xs font-semibold text-stone-300">
+                            Create Password
+                          </label>
+                          {password && (
+                            <span className={`text-[9px] font-mono font-bold uppercase ${
+                              passwordStrength.percent === 100 
+                                ? "text-emerald-400" 
+                                : passwordStrength.percent === 66 
+                                ? "text-amber-400" 
+                                : "text-rose-400"
+                            }`}>
+                              {passwordStrength.text}
+                            </span>
+                          )}
+                        </div>
+                        <div className="relative">
+                          <input 
+                            id="onb-password"
+                            type={showPassword ? "text" : "password"} 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            placeholder="••••••••"
+                            className="w-full bg-[#031d10]/90 border border-[#115e34]/50 rounded-lg pl-4 pr-10 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-[#C5E729] focus:ring-1 focus:ring-[#C5E729]/30 transition-all text-sm font-sans"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => setShowPassword(!showPassword)}
+                            className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-white transition-colors cursor-pointer"
+                          >
+                            {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                          </button>
+                        </div>
+
+                        {/* Tracker strength lines */}
+                        <div className="mt-2.5 h-1 w-full bg-neutral-900 rounded-full overflow-hidden flex gap-0.5">
+                          <div className={`h-full ${passwordStrength.color} transition-all duration-300 ${passwordStrength.percent >= 33 ? "w-1/3" : "w-0"}`} />
+                          <div className={`h-full ${passwordStrength.color} transition-all duration-300 ${passwordStrength.percent >= 66 ? "w-1/3" : "w-0"}`} />
+                          <div className={`h-full ${passwordStrength.color} transition-all duration-300 ${passwordStrength.percent === 100 ? "w-1/3" : "w-0"}`} />
+                        </div>
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      onClick={handleNext}
+                      disabled={isLoading}
+                      className="w-full bg-[#117644] hover:bg-[#189b5a] text-white py-3 rounded-lg text-sm font-semibold mt-4 transition-all shadow-md active:scale-[0.98] cursor-pointer"
+                    >
+                      Sign Up
+                    </button>
+
+                    <p className="text-xs text-stone-500 text-center pt-2 leading-relaxed">
+                      By proceeding, you agree to Postrick&apos;s <span className="underline hover:text-stone-300 cursor-pointer">Terms of Service</span> and <span className="underline hover:text-stone-300 cursor-pointer">Privacy Policy</span>.
                     </p>
                   </div>
+                ) : (
+                  /* SUB-STEP B: CUSTOMIZE WORKSPACE (FULL NAME & BUSINESS NAME) */
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <h2 className="text-[32px] font-sans font-semibold text-white tracking-tight leading-tight">
+                        Tell us about yourself
+                      </h2>
+                      <p className="text-sm text-stone-400 font-medium">
+                        Let&apos;s personalize your dynamic brand command center.
+                      </p>
+                    </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-[10px] font-mono font-extrabold uppercase tracking-wider text-stone-400 dark:text-neutral-300 mb-1.5">
-                        Your Full Name
-                      </label>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">
-                          <User className="w-3.5 h-3.5" />
-                        </span>
+                    <div className="space-y-4 pt-2">
+                      <div>
+                        <label className="block text-xs font-semibold text-stone-300 mb-2">
+                          Your Full Name
+                        </label>
                         <input 
                           type="text" 
                           value={fullName}
                           onChange={(e) => setFullName(e.target.value)}
                           placeholder="e.g. Ahmed Al-Mansoori"
-                          className={`w-full pl-9 pr-3 py-2.5 border rounded-xl text-xs font-semibold transition-all focus:outline-none focus:ring-1 focus:ring-[#117644] ${
-                            isDarkMode 
-                              ? "bg-[#02180c] border-[#115e34] text-white focus:border-[#C5E729]" 
-                              : "bg-white border-[#b0a487]/50 text-[#042F1A] focus:border-[#117644]"
-                          }`}
+                          className="w-full bg-[#031d10]/90 border border-[#115e34]/50 rounded-lg px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-[#C5E729] focus:ring-1 focus:ring-[#C5E729]/30 transition-all text-sm font-sans"
                         />
                       </div>
-                    </div>
 
-                    <div>
-                      <label className="block text-[10px] font-mono font-extrabold uppercase tracking-wider text-stone-400 dark:text-neutral-300 mb-1.5">
-                        Business / Workspace Name
-                      </label>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">
-                          <Building className="w-3.5 h-3.5" />
-                        </span>
+                      <div>
+                        <label className="block text-xs font-semibold text-stone-300 mb-2">
+                          Workspace / Brand Name
+                        </label>
                         <input 
                           type="text" 
                           value={businessName}
                           onChange={(e) => setBusinessName(e.target.value)}
                           placeholder="e.g. Savvy Monarch"
-                          className={`w-full pl-9 pr-3 py-2.5 border rounded-xl text-xs font-semibold transition-all focus:outline-none focus:ring-1 focus:ring-[#117644] ${
-                            isDarkMode 
-                              ? "bg-[#02180c] border-[#115e34] text-white focus:border-[#C5E729]" 
-                              : "bg-white border-[#b0a487]/50 text-[#042F1A] focus:border-[#117644]"
-                          }`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-4">
-                    <div>
-                      <label className="block text-[10px] font-mono font-extrabold uppercase tracking-wider text-stone-400 dark:text-neutral-300 mb-1.5">
-                        Corporate Email Address
-                      </label>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">
-                          <Mail className="w-3.5 h-3.5" />
-                        </span>
-                        <input 
-                          type="email" 
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          placeholder="ahmed@savvymonarch.com"
-                          className={`w-full pl-9 pr-3 py-2.5 border rounded-xl text-xs font-semibold transition-all focus:outline-none focus:ring-1 focus:ring-[#117644] ${
-                            isDarkMode 
-                              ? "bg-[#02180c] border-[#115e34] text-white focus:border-[#C5E729]" 
-                              : "bg-white border-[#b0a487]/50 text-[#042F1A] focus:border-[#117644]"
-                          }`}
+                          className="w-full bg-[#031d10]/90 border border-[#115e34]/50 rounded-lg px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-[#C5E729] focus:ring-1 focus:ring-[#C5E729]/30 transition-all text-sm font-sans"
                         />
                       </div>
                     </div>
 
-                    <div>
-                      <div className="flex justify-between items-center mb-1.5">
-                        <label className="block text-[10px] font-mono font-extrabold uppercase tracking-wider text-stone-400 dark:text-neutral-300">
-                          Secure Password
-                        </label>
-                        {password && (
-                          <span className={`text-[9px] font-mono font-bold uppercase ${
-                            passwordStrength.percent === 100 
-                              ? "text-emerald-500" 
-                              : passwordStrength.percent === 66 
-                              ? "text-amber-500" 
-                              : "text-rose-500"
-                          }`}>
-                            {passwordStrength.text}
-                          </span>
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={handlePrev}
+                        disabled={isLoading}
+                        className="flex-1 bg-[#1e2521] text-stone-300 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#28322c] cursor-pointer"
+                      >
+                        Back
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={isLoading}
+                        className="flex-[2] bg-[#117644] text-white py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#189b5a] shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                      >
+                        {isLoading ? (
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                        ) : (
+                          <>Configure Profile <ArrowRight className="w-4 h-4" /></>
                         )}
-                      </div>
-                      <div className="relative">
-                        <span className="absolute inset-y-0 left-0 pl-3 flex items-center text-stone-400">
-                          <Lock className="w-3.5 h-3.5" />
-                        </span>
-                        <input 
-                          type={showPassword ? "text" : "password"} 
-                          value={password}
-                          onChange={(e) => setPassword(e.target.value)}
-                          placeholder="••••••••"
-                          className={`w-full pl-9 pr-10 py-2.5 border rounded-xl text-xs font-semibold transition-all focus:outline-none focus:ring-1 focus:ring-[#117644] ${
-                            isDarkMode 
-                              ? "bg-[#02180c] border-[#115e34] text-white focus:border-[#C5E729]" 
-                              : "bg-white border-[#b0a487]/50 text-[#042F1A] focus:border-[#117644]"
-                          }`}
-                        />
-                        <button
-                          type="button"
-                          onClick={() => setShowPassword(!showPassword)}
-                          className="absolute inset-y-0 right-0 pr-3 flex items-center text-stone-400 hover:text-stone-600 transition-colors cursor-pointer"
-                        >
-                          {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
-                        </button>
-                      </div>
-
-                      {/* Password strength animated tracker bars */}
-                      <div className="mt-2.5 h-1 w-full bg-neutral-100 dark:bg-neutral-800 rounded-full overflow-hidden flex gap-0.5">
-                        <div className={`h-full ${passwordStrength.color} transition-all duration-300 ${passwordStrength.percent >= 33 ? "w-1/3" : "w-0"}`} />
-                        <div className={`h-full ${passwordStrength.color} transition-all duration-300 ${passwordStrength.percent >= 66 ? "w-1/3" : "w-0"}`} />
-                        <div className={`h-full ${passwordStrength.color} transition-all duration-300 ${passwordStrength.percent === 100 ? "w-1/3" : "w-0"}`} />
-                      </div>
+                      </button>
                     </div>
                   </div>
+                )}
+              </div>
+            )}
 
-                  <p className="text-[10px] text-stone-400 leading-relaxed font-medium">
-                    By submitting your workspace setup, you verify and agree to form an authenticated security node under our server-side publishing compliance mandates.
+            {/* STEP 2: PERSONALIZED WELCOME SCREEN */}
+            {currentStep === 1 && (
+              <div className="space-y-6 text-center">
+                <motion.div 
+                  initial={{ scale: 0.85, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 150, delay: 0.1 }}
+                  className="mx-auto w-16 h-16 rounded-full bg-[#117644]/25 text-[#C5E729] flex items-center justify-center shadow-md border border-[#117644]/40"
+                >
+                  <Sparkles className="w-8 h-8" />
+                </motion.div>
+
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-semibold text-white tracking-tight leading-tight">
+                    Welcome to Postrick
+                  </h1>
+                  <p className="text-sm text-stone-400 font-medium max-w-sm mx-auto leading-relaxed">
+                    Let&apos;s get your business <span className="text-[#C5E729] font-semibold">&ldquo;{businessName || "Savvy Monarch"}&rdquo;</span> set up for success, <span className="font-semibold text-white">{fullName || "Ahmed"}</span>.
                   </p>
                 </div>
-              )}
 
-              {/* STEP 2: PERSONALIZED WELCOME SCREEN */}
-              {currentStep === 1 && (
-                <div className="space-y-6 text-center max-w-lg mx-auto py-2">
-                  <motion.div 
-                    initial={{ scale: 0.85, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    transition={{ type: "spring", stiffness: 150, delay: 0.1 }}
-                    className="mx-auto w-16 h-16 rounded-full bg-[#117644]/15 text-[#117644] dark:text-[#C5E729] flex items-center justify-center shadow-sm"
+                {/* High fidelity inline graphic representing synchronized dashboard */}
+                <div className="p-5 rounded-2xl bg-[#031d10]/95 border border-[#115e34]/50 flex flex-col items-center gap-3 font-mono text-[10.5px] max-w-sm mx-auto shadow-lg text-left">
+                  <div className="flex justify-between items-center w-full font-bold text-[#C5E729]">
+                    <span className="flex items-center gap-1.5"><Laptop className="w-3.5 h-3.5" /> Workspace Dispatch</span>
+                    <span className="text-[9px] bg-[#117644]/20 text-[#C5E729] px-2 py-0.5 rounded-full font-sans uppercase font-black tracking-wider">Authorized</span>
+                  </div>
+
+                  <div className="w-full space-y-1.5 pt-1 text-stone-400">
+                    <div className="flex justify-between border-b border-[#115e34]/20 pb-1.5">
+                      <span>Server Node</span>
+                      <span className="text-white font-bold">Node-A91_Green</span>
+                    </div>
+                    <div className="flex justify-between border-b border-[#115e34]/20 pb-1.5">
+                      <span>Brand Registry</span>
+                      <span className="text-white font-bold">Active & Saved</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Encryption Protocol</span>
+                      <span className="text-[#C5E729] font-bold">SHA-256 SSL</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="flex-1 bg-[#1e2521] text-stone-300 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#28322c] cursor-pointer"
                   >
-                    <Sparkles className="w-8 h-8" />
-                  </motion.div>
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-[2] bg-[#117644] text-white py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#189b5a] shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    Let&apos;s Start <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
 
-                  <div className="space-y-2">
-                    <h1 className="font-serif text-2xl sm:text-3xl font-black text-[#042F1A] dark:text-white leading-tight">
-                      Welcome to Postrick
-                    </h1>
-                    <p className="text-sm text-stone-500 dark:text-neutral-300 font-semibold max-w-md mx-auto">
-                      Let&apos;s get your business <span className="text-[#117644] dark:text-[#C5E729] font-bold">&ldquo;{businessName || "Savvy Monarch"}&rdquo;</span> set up for success, <span className="font-bold text-[#042F1A] dark:text-white">{fullName || "Ahmed"}</span>.
-                    </p>
-                  </div>
-
-                  {/* High fidelity inline graphic representing synchronized dashboard */}
-                  <div className={`p-5 rounded-2xl border flex flex-col items-center gap-3 font-mono text-[10.5px] max-w-sm mx-auto shadow-sm ${
-                    isDarkMode ? "bg-[#02180c] border-[#115e34]/40" : "bg-[#FAF6EE]/50 border-[#eae3d2]"
-                  }`}>
-                    <div className="flex justify-between items-center w-full font-bold text-[#117644] dark:text-[#C5E729]">
-                      <span className="flex items-center gap-1.5"><Laptop className="w-3.5 h-3.5" /> Workspace Dispatch</span>
-                      <span className="text-[9px] bg-[#117644]/15 dark:bg-[#C5E729]/15 px-2 py-0.5 rounded-full font-sans uppercase font-black">Authorized</span>
-                    </div>
-                    <div className="w-full h-0.5 border-t border-dashed border-[#eae3d2] dark:border-neutral-800" />
-                    <p className="text-stone-500 dark:text-stone-300 leading-normal text-center italic">
-                      &ldquo;Unified posting profiles and calendar dispatch buffers are currently loading into system RAM.&rdquo;
-                    </p>
-                  </div>
-
-                  <p className="text-xs text-stone-400 font-semibold">
-                    Click Continue to tailor your specific target audiences and campaign focus!
+            {/* STEP 3: HOW WOULD YOU DESCRIBE YOURSELF? */}
+            {currentStep === 2 && (
+              <div className="space-y-6 text-left">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-semibold text-white tracking-tight leading-tight">
+                    Describe yourself
+                  </h2>
+                  <p className="text-sm text-stone-400 font-medium leading-relaxed">
+                    Select the role profile that aligns best with your organizational daily workflow.
                   </p>
                 </div>
-              )}
 
-              {/* STEP 3: HOW WOULD YOU DESCRIBE YOURSELF? */}
-              {currentStep === 2 && (
-                <div className="space-y-5 text-left">
-                  <div className="space-y-1">
-                    <h2 className="font-serif text-xl sm:text-2xl font-black text-[#042F1A] dark:text-white leading-tight">
-                      How would you describe yourself?
-                    </h2>
-                    <p className="text-xs text-stone-500 dark:text-neutral-300 font-medium">
-                      Select the role profile that aligns best with your organizational daily workflow.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5">
-                    {ROLE_CARDS.map((card) => {
-                      const IconComp = card.icon;
-                      const isSelected = userRole === card.id;
-                      return (
-                        <motion.button
-                          key={card.id}
-                          type="button"
-                          whileHover={{ scale: 1.01 }}
-                          whileTap={{ scale: 0.99 }}
-                          onClick={() => {
-                            setUserRole(card.id);
-                            if (card.id !== "Other") setCustomRole("");
-                          }}
-                          className={`p-4 rounded-xl border text-left flex items-start gap-3.5 transition-all duration-300 cursor-pointer ${
-                            isSelected 
-                              ? "border-[#117644] bg-[#117644]/5 dark:bg-emerald-950/20 shadow-sm" 
-                              : "border-[#b0a487]/30 dark:border-neutral-800 hover:border-[#117644]/50 hover:bg-neutral-50/50 dark:hover:bg-neutral-800/30"
-                          }`}
-                        >
-                          <span className={`p-2 rounded-lg flex-shrink-0 transition-colors ${
-                            isSelected 
-                              ? "bg-[#117644]/15 text-[#117644] dark:text-[#C5E729]" 
-                              : "bg-neutral-100 dark:bg-neutral-800 text-stone-500"
-                          }`}>
-                            <IconComp className="w-4 h-4" />
+                <div className="grid grid-cols-1 gap-3 pt-2">
+                  {ROLE_CARDS.map((card) => {
+                    const IconComp = card.icon;
+                    const isSelected = userRole === card.id;
+                    return (
+                      <motion.button
+                        key={card.id}
+                        type="button"
+                        whileHover={{ scale: 1.01 }}
+                        whileTap={{ scale: 0.99 }}
+                        onClick={() => {
+                          setUserRole(card.id);
+                          if (card.id !== "Other") setCustomRole("");
+                        }}
+                        className={`p-4 rounded-xl border text-left flex items-start gap-3.5 transition-all duration-300 cursor-pointer ${
+                          isSelected 
+                            ? "border-[#C5E729] bg-[#117644]/20 shadow-sm" 
+                            : "border-[#115e34]/40 bg-[#031d10]/40 hover:border-[#117644]/80 hover:bg-[#031d10]/90"
+                        }`}
+                      >
+                        <span className={`p-2.5 rounded-lg flex-shrink-0 transition-colors ${
+                          isSelected 
+                            ? "bg-[#C5E729]/15 text-[#C5E729]" 
+                            : "bg-neutral-900 text-stone-400"
+                        }`}>
+                          <IconComp className="w-4 h-4" />
+                        </span>
+                        <div className="space-y-1 min-w-0">
+                          <span className="block text-xs font-bold text-white">
+                            {card.title}
                           </span>
-                          <div className="space-y-1 min-w-0">
-                            <span className="block text-xs font-bold text-[#042F1A] dark:text-white">
-                              {card.title}
-                            </span>
-                            <span className="block text-[10px] text-stone-400 dark:text-neutral-300 leading-normal font-medium">
-                              {card.desc}
-                            </span>
-                          </div>
-                        </motion.button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Seamless expanding Input for "Other" Selection */}
-                  <AnimatePresence>
-                    {userRole === "Other" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden pt-1.5"
-                      >
-                        <label className="block text-[10px] font-mono font-extrabold uppercase tracking-wider text-[#117644] dark:text-[#C5E729] mb-1.5">
-                          Specify your specific role description
-                        </label>
-                        <input 
-                          type="text"
-                          value={customRole}
-                          onChange={(e) => setCustomRole(e.target.value)}
-                          placeholder="e.g. Non-profit Digital Advocate, Brand Director"
-                          className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#117644] ${
-                            isDarkMode 
-                              ? "bg-[#02180c] border-[#115e34] text-white focus:border-[#C5E729]" 
-                              : "bg-white border-[#b0a487]/50 text-[#042F1A] focus:border-[#117644]"
-                          }`}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* STEP 4: WHAT TOOLS DO YOU USE TO MANAGE SOCIAL MEDIA? */}
-              {currentStep === 3 && (
-                <div className="space-y-5 text-left">
-                  <div className="space-y-1">
-                    <h2 className="font-serif text-xl sm:text-2xl font-black text-[#042F1A] dark:text-white leading-tight">
-                      What tools do you currently use?
-                    </h2>
-                    <p className="text-xs text-stone-500 dark:text-neutral-300 font-medium">
-                      Select all social media management tools you actively deploy. (Multiple Selections Allowed).
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {TOOL_CARDS.map((tool) => {
-                      const isSelected = currentTools.includes(tool.id);
-                      return (
-                        <button
-                          key={tool.id}
-                          type="button"
-                          onClick={() => {
-                            if (tool.id === "Not Using Any Tool") {
-                              setCurrentTools(["Not Using Any Tool"]);
-                              setCustomTool("");
-                              return;
-                            }
-                            let updated = [...currentTools].filter(t => t !== "Not Using Any Tool");
-                            if (updated.includes(tool.id)) {
-                              updated = updated.filter(t => t !== tool.id);
-                            } else {
-                              updated.push(tool.id);
-                            }
-                            setCurrentTools(updated);
-                            if (!updated.includes("Other")) setCustomTool("");
-                          }}
-                          className={`p-3.5 rounded-xl border text-center transition-all duration-300 font-semibold text-xs cursor-pointer ${
-                            isSelected 
-                              ? "border-[#117644] bg-[#117644]/5 dark:bg-emerald-950/20 text-[#117644] dark:text-[#C5E729] shadow-sm" 
-                              : "border-[#b0a487]/30 dark:border-neutral-800 text-stone-500 dark:text-neutral-300 hover:border-[#117644]/40 hover:bg-neutral-50/50"
-                          }`}
-                        >
-                          <div className="flex items-center justify-center gap-1.5">
-                            {isSelected && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
-                            <span>{tool.name}</span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Expanding input if "Other" custom tool selected */}
-                  <AnimatePresence>
-                    {currentTools.includes("Other") && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden pt-1.5"
-                      >
-                        <label className="block text-[10px] font-mono font-extrabold uppercase tracking-wider text-[#117644] dark:text-[#C5E729] mb-1.5">
-                          Specify alternative tools in use
-                        </label>
-                        <input 
-                          type="text"
-                          value={customTool}
-                          onChange={(e) => setCustomTool(e.target.value)}
-                          placeholder="e.g. Metricool, custom internal script, Airtable"
-                          className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#117644] ${
-                            isDarkMode 
-                              ? "bg-[#02180c] border-[#115e34] text-white focus:border-[#C5E729]" 
-                              : "bg-white border-[#b0a487]/50 text-[#042F1A] focus:border-[#117644]"
-                          }`}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* STEP 5: SOCIAL MEDIA MANAGEMENT (Section A: accounts count, Section B: channels) */}
-              {currentStep === 4 && (
-                <div className="space-y-6 text-left">
-                  <div className="space-y-1">
-                    <h2 className="font-serif text-xl sm:text-2xl font-black text-[#042F1A] dark:text-white leading-tight">
-                      Social Media Management Focus
-                    </h2>
-                    <p className="text-xs text-stone-500 dark:text-neutral-300 font-medium">
-                      Tell us about the scope of your active visual campaigns and channels.
-                    </p>
-                  </div>
-
-                  {/* SECTION A: How many social accounts? */}
-                  <div className="space-y-3">
-                    <h4 className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-[#117644] dark:text-[#C5E729]">
-                      Section A: How many social accounts do you currently manage?
-                    </h4>
-                    <div className="flex flex-wrap gap-2.5">
-                      {["1–3", "4–10", "11–25", "26–50", "50+"].map((option) => {
-                        const isSelected = accountCount === option;
-                        return (
-                          <button
-                            key={option}
-                            type="button"
-                            onClick={() => setAccountCount(option)}
-                            className={`px-4.5 py-2.5 rounded-xl border text-xs font-extrabold transition-all duration-200 cursor-pointer ${
-                              isSelected 
-                                ? "border-[#117644] bg-[#117644] text-white shadow-sm" 
-                                : "border-[#b0a487]/30 dark:border-neutral-800 text-stone-500 hover:border-[#117644]/40 hover:bg-neutral-50/50"
-                            }`}
-                          >
-                            {option}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* SECTION B: What social channels are your focus? */}
-                  <div className="space-y-3 pt-2">
-                    <h4 className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-[#117644] dark:text-[#C5E729]">
-                      Section B: What social channels are your focus? (Multiple)
-                    </h4>
-                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                      {PLATFORMS_LIST.map((plat) => {
-                        const isSelected = focusedChannels.includes(plat.id);
-                        const IconComp = plat.icon;
-                        return (
-                          <button
-                            key={plat.id}
-                            type="button"
-                            onClick={() => {
-                              if (focusedChannels.includes(plat.id)) {
-                                setFocusedChannels(prev => prev.filter(p => p !== plat.id));
-                              } else {
-                                setFocusedChannels(prev => [...prev, plat.id]);
-                              }
-                            }}
-                            className={`p-3.5 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer ${plat.color} ${
-                              isSelected 
-                                ? "border-[#117644] bg-[#117644]/5 text-[#117644] dark:text-emerald-400 font-extrabold shadow-sm" 
-                                : "border-[#b0a487]/20 dark:border-neutral-800 text-stone-500 dark:text-stone-300"
-                            }`}
-                          >
-                            <span className="p-1.5 rounded-full bg-neutral-100 dark:bg-neutral-800">
-                              <IconComp className="w-4 h-4" />
-                            </span>
-                            <span className="text-[10.5px] font-bold">{plat.name}</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 6: DISCOVER POSTRICK (Interactive Showcase Carousel) */}
-              {currentStep === 5 && (
-                <div className="space-y-5 text-left">
-                  <div className="space-y-1">
-                    <h2 className="font-serif text-xl sm:text-2xl font-black text-[#042F1A] dark:text-white leading-tight">
-                      Discover Postrick&apos;s Core Capabilities
-                    </h2>
-                    <p className="text-xs text-stone-500 dark:text-neutral-300 font-medium">
-                      See how our specialized workflows accelerate visual campaign publication and audience activation.
-                    </p>
-                  </div>
-
-                  {/* CAROUSEL CONTAINER */}
-                  <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch min-h-[220px]">
-                    {/* Visual Mockup Card */}
-                    <div className="md:col-span-5 flex items-center justify-center">
-                      <div className="w-full h-full max-w-[240px] md:max-w-none aspect-square md:aspect-auto">
-                        {DISCOVER_SLIDES[carouselIndex].renderMock}
-                      </div>
-                    </div>
-
-                    {/* Description Details Card */}
-                    <div className={`md:col-span-7 p-5 rounded-2xl border flex flex-col justify-between ${
-                      isDarkMode ? "bg-[#02180c] border-[#115e34]/30" : "bg-[#FAF6EE]/50 border-[#eae3d2]"
-                    }`}>
-                      <div className="space-y-2.5">
-                        <span className="text-[9px] font-mono uppercase tracking-widest font-black text-[#117644] dark:text-[#C5E729]">
-                          Featured Product Slide
-                        </span>
-                        <h3 className="font-serif text-base font-black text-[#042F1A] dark:text-white">
-                          {DISCOVER_SLIDES[carouselIndex].title}
-                        </h3>
-                        <p className="text-[11px] text-stone-500 dark:text-neutral-300 leading-relaxed font-medium">
-                          {DISCOVER_SLIDES[carouselIndex].desc}
-                        </p>
-                      </div>
-
-                      <div className="pt-4 border-t border-dashed border-[#eae3d2] dark:border-neutral-800 space-y-1">
-                        <div className="flex items-center gap-1.5 text-[10.5px] font-semibold text-[#117644] dark:text-[#C5E729]">
-                          <Zap className="w-3.5 h-3.5 flex-shrink-0" />
-                          <span>Core Benefit: {DISCOVER_SLIDES[carouselIndex].benefit}</span>
+                          <span className="block text-[11px] text-stone-400 leading-normal font-medium">
+                            {card.desc}
+                          </span>
                         </div>
-                        <div className="text-[9px] font-mono text-stone-400">
-                          Platform Index: {DISCOVER_SLIDES[carouselIndex].metric}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* CAROUSEL CONTROLS */}
-                  <div className="flex items-center justify-between pt-1 flex-shrink-0">
-                    <div className="flex gap-1">
-                      {DISCOVER_SLIDES.map((_, i) => (
-                        <button
-                          key={i}
-                          type="button"
-                          onClick={() => setCarouselIndex(i)}
-                          className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
-                            carouselIndex === i 
-                              ? "bg-[#117644] dark:bg-[#C5E729] w-6" 
-                              : "bg-neutral-200 dark:bg-neutral-800 hover:bg-[#117644]/50"
-                          }`}
-                        />
-                      ))}
-                    </div>
-
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => setCarouselIndex(prev => (prev === 0 ? DISCOVER_SLIDES.length - 1 : prev - 1))}
-                        className={`p-2 rounded-lg border transition-all cursor-pointer ${
-                          isDarkMode ? "border-stone-800 hover:bg-neutral-800" : "border-[#eae3d2] hover:bg-stone-100"
-                        }`}
-                      >
-                        <ArrowLeft className="w-3.5 h-3.5 text-stone-600 dark:text-stone-300" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => setCarouselIndex(prev => (prev === DISCOVER_SLIDES.length - 1 ? 0 : prev + 1))}
-                        className={`p-2 rounded-lg border transition-all cursor-pointer ${
-                          isDarkMode ? "border-stone-800 hover:bg-neutral-800" : "border-[#eae3d2] hover:bg-stone-100"
-                        }`}
-                      >
-                        <ArrowRight className="w-3.5 h-3.5 text-stone-600 dark:text-stone-300" />
-                      </button>
-                    </div>
-                  </div>
+                      </motion.button>
+                    );
+                  })}
                 </div>
-              )}
 
-              {/* STEP 7: HOW DID YOU HEAR ABOUT POSTRICK? */}
-              {currentStep === 6 && (
-                <div className="space-y-5 text-left">
-                  <div className="space-y-1">
-                    <h2 className="font-serif text-xl sm:text-2xl font-black text-[#042F1A] dark:text-white leading-tight">
-                      How did you hear about Postrick?
-                    </h2>
-                    <p className="text-xs text-stone-500 dark:text-neutral-300 font-medium">
-                      Help us understand how you found our marketing command studio to refine our channels.
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                    {ATTRIBUTION_CARDS.map((card) => {
-                      const isSelected = attribution === card.id;
-                      return (
-                        <button
-                          key={card.id}
-                          type="button"
-                          onClick={() => {
-                            setAttribution(card.id);
-                            if (card.id !== "Other") setCustomAttribution("");
-                          }}
-                          className={`p-3 rounded-xl border text-center transition-all duration-300 font-semibold text-xs cursor-pointer ${
-                            isSelected 
-                              ? "border-[#117644] bg-[#117644]/5 dark:bg-emerald-950/20 text-[#117644] dark:text-[#C5E729] shadow-sm" 
-                              : "border-[#b0a487]/30 dark:border-neutral-800 text-stone-500 dark:text-neutral-300 hover:border-[#117644]/40 hover:bg-neutral-50/50"
-                          }`}
-                        >
-                          {card.label}
-                        </button>
-                      );
-                    })}
-                  </div>
-
-                  {/* Custom attribution entry */}
-                  <AnimatePresence>
-                    {attribution === "Other" && (
-                      <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: "auto" }}
-                        exit={{ opacity: 0, height: 0 }}
-                        className="overflow-hidden pt-1.5"
-                      >
-                        <label className="block text-[10px] font-mono font-extrabold uppercase tracking-wider text-[#117644] dark:text-[#C5E729] mb-1.5">
-                          Specify alternative referral source
-                        </label>
-                        <input 
-                          type="text"
-                          value={customAttribution}
-                          onChange={(e) => setCustomAttribution(e.target.value)}
-                          placeholder="e.g. Substack Newsletter, Conference"
-                          className={`w-full px-3.5 py-2.5 border rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-[#117644] ${
-                            isDarkMode 
-                              ? "bg-[#02180c] border-[#115e34] text-white focus:border-[#C5E729]" 
-                              : "bg-white border-[#b0a487]/50 text-[#042F1A] focus:border-[#117644]"
-                          }`}
-                        />
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
-
-              {/* STEP 8: FINAL COMPLETION SCREEN */}
-              {currentStep === 7 && (
-                <div className="space-y-6 text-center max-w-lg mx-auto py-2">
-                  <motion.div 
-                    initial={{ scale: 0.5, opacity: 0 }}
-                    animate={{ scale: [1, 1.15, 1], opacity: 1 }}
-                    transition={{ duration: 0.5, ease: "easeOut" }}
-                    className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center border border-emerald-500/20 shadow-sm"
-                  >
-                    <CheckCircle2 className="w-10 h-10 animate-pulse" />
-                  </motion.div>
-
-                  <div className="space-y-2">
-                    <h1 className="font-serif text-2xl sm:text-3xl font-black text-[#042F1A] dark:text-white leading-tight">
-                      You&apos;re all set!
-                    </h1>
-                    <p className="text-xs text-[#117644] dark:text-[#C5E729] font-extrabold uppercase tracking-widest font-mono">
-                      Security profiles authorized
-                    </p>
-                    <p className="text-sm text-stone-500 dark:text-neutral-300 font-medium leading-relaxed max-w-md mx-auto">
-                      Welcome to Postrick, <strong className="text-[#042F1A] dark:text-white font-bold">{fullName || "Ahmed"}</strong>. Your brand campaign workspace <strong className="text-[#042F1A] dark:text-white font-bold">&ldquo;{businessName || "Savvy Monarch"}&rdquo;</strong> is ready for launch.
-                    </p>
-                  </div>
-
-                  {/* Interactive toggle option */}
-                  <div className={`p-4 rounded-xl border flex items-center justify-between text-left max-w-md mx-auto cursor-pointer transition-colors ${
-                    isDarkMode ? "bg-[#02180c] border-[#115e34]/30" : "bg-[#FAF6EE]/40 border-[#eae3d2]"
-                  }`} onClick={() => setScheduleFirstCampaign(!scheduleFirstCampaign)}>
-                    <div className="space-y-0.5 pr-4 min-w-0">
-                      <span className="block text-xs font-bold text-[#042F1A] dark:text-white">
-                        Pre-populate sample campaign drafts
-                      </span>
-                      <span className="block text-[10px] text-stone-400 font-medium leading-normal">
-                        Populate active channels queues with pre-structured campaigns for immediate testing.
-                      </span>
-                    </div>
-                    <div className={`w-10 h-6.5 rounded-full p-1 transition-colors relative flex-shrink-0 cursor-pointer ${
-                      scheduleFirstCampaign ? "bg-[#117644]" : "bg-neutral-200 dark:bg-neutral-800"
-                    }`}>
-                      <motion.div 
-                        className="w-4.5 h-4.5 bg-white rounded-full shadow-md"
-                        animate={{ x: scheduleFirstCampaign ? 14 : 0 }}
-                        transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                {/* Seamless expanding Input for "Other" Selection */}
+                <AnimatePresence>
+                  {userRole === "Other" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden pt-1"
+                    >
+                      <label className="block text-xs font-semibold text-stone-300 mb-2">
+                        Specify your specific role description
+                      </label>
+                      <input 
+                        type="text"
+                        value={customRole}
+                        onChange={(e) => setCustomRole(e.target.value)}
+                        placeholder="e.g. Non-profit Digital Advocate, Brand Director"
+                        className="w-full bg-[#031d10]/90 border border-[#115e34]/50 rounded-lg px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-[#C5E729] focus:ring-1 focus:ring-[#C5E729]/30 transition-all text-sm font-sans"
                       />
-                    </div>
-                  </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-                  <p className="text-[10px] text-stone-400 leading-normal font-medium max-w-sm mx-auto">
-                    Click &ldquo;Go to Dashboard&rdquo; below to unlock your active calendar queues, visual composer, and generative caption studios.
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="flex-1 bg-[#1e2521] text-stone-300 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#28322c] cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-[2] bg-[#117644] text-white py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#189b5a] shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 4: WHAT TOOLS DO YOU USE TO MANAGE SOCIAL MEDIA? */}
+            {currentStep === 3 && (
+              <div className="space-y-6 text-left">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-semibold text-white tracking-tight leading-tight">
+                    Tools in use
+                  </h2>
+                  <p className="text-sm text-stone-400 font-medium leading-relaxed">
+                    Select all social media management tools you actively deploy. (Multiple Selections Allowed).
                   </p>
                 </div>
-              )}
-            </motion.div>
-          </AnimatePresence>
-        </div>
 
-        {/* BOTTOM NAVIGATION FOOTER */}
-        <div className={`p-4 md:p-5 border-t flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/30 flex-shrink-0 ${
-          isDarkMode ? "border-[#115e34]/30" : "border-[#b0a487]/20"
-        }`}>
-          {currentStep > 0 && currentStep < TOTAL_STEPS - 1 ? (
-            <button
-              type="button"
-              onClick={handlePrev}
-              disabled={isLoading}
-              className={`py-2.5 px-4 rounded-xl text-xs font-extrabold flex items-center gap-1.5 transition-all cursor-pointer ${
-                isDarkMode 
-                  ? "bg-neutral-800 hover:bg-neutral-700 text-[#FAF6EE] border border-[#115e34]/40" 
-                  : "bg-white hover:bg-stone-50 text-[#042F1A] border border-[#b0a487]/30 shadow-xs"
-              }`}
-            >
-              <ArrowLeft className="w-3.5 h-3.5" /> Back
-            </button>
-          ) : (
-            <div />
-          )}
+                <div className="grid grid-cols-2 gap-3 pt-2">
+                  {TOOL_CARDS.map((tool) => {
+                    const isSelected = currentTools.includes(tool.id);
+                    return (
+                      <button
+                        key={tool.id}
+                        type="button"
+                        onClick={() => {
+                          if (tool.id === "Not Using Any Tool") {
+                            setCurrentTools(["Not Using Any Tool"]);
+                            setCustomTool("");
+                            return;
+                          }
+                          let updated = [...currentTools].filter(t => t !== "Not Using Any Tool");
+                          if (updated.includes(tool.id)) {
+                            updated = updated.filter(t => t !== tool.id);
+                          } else {
+                            updated.push(tool.id);
+                          }
+                          setCurrentTools(updated);
+                          if (!updated.includes("Other")) setCustomTool("");
+                        }}
+                        className={`p-3.5 rounded-xl border text-center transition-all duration-300 font-semibold text-xs cursor-pointer ${
+                          isSelected 
+                            ? "border-[#C5E729] bg-[#117644]/20 text-[#C5E729] shadow-sm" 
+                            : "border-[#115e34]/40 bg-[#031d10]/40 text-stone-300 hover:border-[#117644]/70 hover:bg-[#031d10]/90"
+                        }`}
+                      >
+                        <div className="flex items-center justify-center gap-1.5">
+                          {isSelected && <Check className="w-3.5 h-3.5 flex-shrink-0" />}
+                          <span>{tool.name}</span>
+                        </div>
+                      </button>
+                    );
+                  })}
+                </div>
 
-          {currentStep < TOTAL_STEPS - 1 ? (
-            <button
-              type="button"
-              onClick={handleNext}
-              disabled={isLoading}
-              className="py-2.5 px-5 rounded-xl text-xs font-extrabold text-white bg-[#117644] hover:bg-[#117644]/90 dark:bg-[#C5E729] dark:text-[#042F1A] dark:hover:bg-[#C5E729]/90 shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-            >
-              {isLoading ? (
-                <div className="animate-spin rounded-full h-3.5 w-3.5 border-b-2 border-white dark:border-[#042F1A]" />
-              ) : (
-                <>Continue <ArrowRight className="w-3.5 h-3.5" /></>
-              )}
-            </button>
-          ) : (
-            <div className="flex gap-3.5 w-full justify-between items-center">
-              <button
-                type="button"
-                onClick={() => {
-                  setCurrentStep(5); // Go back to the Discover Carousel step!
-                  setCarouselIndex(0);
-                }}
-                className={`py-2.5 px-4 rounded-xl text-xs font-extrabold transition-all flex items-center gap-1.5 cursor-pointer ${
-                  isDarkMode 
-                    ? "bg-neutral-800 hover:bg-neutral-700 text-[#FAF6EE]" 
-                    : "bg-white hover:bg-stone-50 text-[#042F1A] border border-[#b0a487]/30"
-                }`}
-              >
-                Take a Quick Tour
-              </button>
+                {/* Expanding input if "Other" custom tool selected */}
+                <AnimatePresence>
+                  {currentTools.includes("Other") && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden pt-1"
+                    >
+                      <label className="block text-xs font-semibold text-stone-300 mb-2">
+                        Specify alternative tools in use
+                      </label>
+                      <input 
+                        type="text"
+                        value={customTool}
+                        onChange={(e) => setCustomTool(e.target.value)}
+                        placeholder="e.g. Metricool, custom internal script, Airtable"
+                        className="w-full bg-[#031d10]/90 border border-[#115e34]/50 rounded-lg px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-[#C5E729] focus:ring-1 focus:ring-[#C5E729]/30 transition-all text-sm font-sans"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
 
-              <button
-                type="button"
-                onClick={handleFinalize}
-                className="py-2.5 px-6 rounded-xl text-xs font-extrabold text-white bg-[#117644] hover:bg-[#117644]/90 dark:bg-[#C5E729] dark:text-[#042F1A] dark:hover:bg-[#C5E729]/90 shadow-md transition-all flex items-center gap-1.5 cursor-pointer"
-              >
-                Go to Dashboard <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-        </div>
-      </motion.div>
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="flex-1 bg-[#1e2521] text-stone-300 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#28322c] cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-[2] bg-[#117644] text-white py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#189b5a] shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 5: SOCIAL MEDIA MANAGEMENT (Section A & B) */}
+            {currentStep === 4 && (
+              <div className="space-y-6 text-left">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-semibold text-white tracking-tight leading-tight">
+                    Campaign Focus
+                  </h2>
+                  <p className="text-sm text-stone-400 font-medium leading-relaxed">
+                    Tell us about the scope of your active visual campaigns and channels.
+                  </p>
+                </div>
+
+                {/* SECTION A: How many social accounts? */}
+                <div className="space-y-3 pt-2">
+                  <h4 className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-[#C5E729]">
+                    Section A: How many accounts do you manage?
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {["1–3", "4–10", "11–25", "26–50", "50+"].map((option) => {
+                      const isSelected = accountCount === option;
+                      return (
+                        <button
+                          key={option}
+                          type="button"
+                          onClick={() => setAccountCount(option)}
+                          className={`px-4 py-2 rounded-lg border text-xs font-bold transition-all duration-200 cursor-pointer ${
+                            isSelected 
+                              ? "border-[#C5E729] bg-[#C5E729] text-[#02140b] shadow-sm" 
+                              : "border-[#115e34]/50 bg-[#031d10]/40 text-stone-300 hover:border-[#117644]"
+                          }`}
+                        >
+                          {option}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* SECTION B: What social channels are your focus? */}
+                <div className="space-y-3 pt-2">
+                  <h4 className="text-[10px] font-mono font-extrabold uppercase tracking-widest text-[#C5E729]">
+                    Section B: Channels of Focus (Multiple)
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+                    {PLATFORMS_LIST.map((plat) => {
+                      const isSelected = focusedChannels.includes(plat.id);
+                      const IconComp = plat.icon;
+                      return (
+                        <button
+                          key={plat.id}
+                          type="button"
+                          onClick={() => {
+                            if (focusedChannels.includes(plat.id)) {
+                              setFocusedChannels(prev => prev.filter(p => p !== plat.id));
+                            } else {
+                              setFocusedChannels(prev => [...prev, plat.id]);
+                            }
+                          }}
+                          className={`p-3 rounded-lg border flex flex-col items-center justify-center gap-2 transition-all duration-300 cursor-pointer ${
+                            isSelected 
+                              ? "border-[#C5E729] bg-[#117644]/20 text-[#C5E729] font-extrabold shadow-sm" 
+                              : "border-[#115e34]/40 bg-[#031d10]/40 text-stone-400 hover:border-[#117644]"
+                          }`}
+                        >
+                          <span className="p-1.5 rounded-full bg-[#02140b]">
+                            <IconComp className="w-4 h-4 text-white" />
+                          </span>
+                          <span className="text-[10px] font-bold text-white">{plat.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="flex-1 bg-[#1e2521] text-stone-300 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#28322c] cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-[2] bg-[#117644] text-white py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#189b5a] shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 6: DISCOVER POSTRICK (Interactive Showcase Carousel) */}
+            {currentStep === 5 && (
+              <div className="space-y-6 text-left">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-semibold text-white tracking-tight leading-tight">
+                    Capabilities
+                  </h2>
+                  <p className="text-sm text-stone-400 font-medium leading-relaxed">
+                    See how our specialized workflows accelerate visual campaign publication and audience activation.
+                  </p>
+                </div>
+
+                {/* CAROUSEL CONTAINER */}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-5 items-stretch min-h-[220px] pt-2">
+                  {/* Visual Mockup Card */}
+                  <div className="md:col-span-5 flex items-center justify-center">
+                    <div className="w-full h-full max-w-[200px] md:max-w-none aspect-square md:aspect-auto">
+                      {DISCOVER_SLIDES[carouselIndex].renderMock}
+                    </div>
+                  </div>
+
+                  {/* Description Details Card */}
+                  <div className="md:col-span-7 p-5 rounded-2xl border bg-[#031d10]/90 border-[#115e34]/50 flex flex-col justify-between">
+                    <div className="space-y-2.5">
+                      <span className="text-[9px] font-mono uppercase tracking-widest font-black text-[#C5E729]">
+                        Featured Capability
+                      </span>
+                      <h3 className="font-sans text-base font-bold text-white">
+                        {DISCOVER_SLIDES[carouselIndex].title}
+                      </h3>
+                      <p className="text-[11px] text-stone-400 leading-relaxed font-medium">
+                        {DISCOVER_SLIDES[carouselIndex].desc}
+                      </p>
+                    </div>
+
+                    <div className="pt-4 border-t border-dashed border-[#115e34]/30 space-y-1">
+                      <div className="flex items-center gap-1.5 text-[10.5px] font-semibold text-[#C5E729]">
+                        <Zap className="w-3.5 h-3.5 flex-shrink-0" />
+                        <span>Benefit: {DISCOVER_SLIDES[carouselIndex].benefit}</span>
+                      </div>
+                      <div className="text-[9px] font-mono text-stone-500">
+                        Platform Index: {DISCOVER_SLIDES[carouselIndex].metric}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* CAROUSEL CONTROLS */}
+                <div className="flex items-center justify-between pt-1 flex-shrink-0">
+                  <div className="flex gap-1">
+                    {DISCOVER_SLIDES.map((_, i) => (
+                      <button
+                        key={i}
+                        type="button"
+                        onClick={() => setCarouselIndex(i)}
+                        className={`w-2.5 h-2.5 rounded-full transition-all cursor-pointer ${
+                          carouselIndex === i 
+                            ? "bg-[#C5E729] w-6" 
+                            : "bg-[#115e34] hover:bg-[#C5E729]/50"
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCarouselIndex(prev => (prev === 0 ? DISCOVER_SLIDES.length - 1 : prev - 1))}
+                      className="p-2 rounded-lg border border-[#115e34]/50 bg-[#031d10] hover:bg-[#117644]/20 transition-all cursor-pointer"
+                    >
+                      <ArrowLeft className="w-3.5 h-3.5 text-stone-300" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setCarouselIndex(prev => (prev === DISCOVER_SLIDES.length - 1 ? 0 : prev + 1))}
+                      className="p-2 rounded-lg border border-[#115e34]/50 bg-[#031d10] hover:bg-[#117644]/20 transition-all cursor-pointer"
+                    >
+                      <ArrowRight className="w-3.5 h-3.5 text-stone-300" />
+                    </button>
+                  </div>
+                </div>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="flex-1 bg-[#1e2521] text-stone-300 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#28322c] cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-[2] bg-[#117644] text-white py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#189b5a] shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 7: HOW DID YOU HEAR ABOUT POSTRICK? */}
+            {currentStep === 6 && (
+              <div className="space-y-6 text-left">
+                <div className="space-y-2">
+                  <h2 className="text-3xl font-semibold text-white tracking-tight leading-tight">
+                    Discovery
+                  </h2>
+                  <p className="text-sm text-stone-400 font-medium leading-relaxed">
+                    Help us understand how you found our marketing command studio to refine our channels.
+                  </p>
+                </div>
+
+                <div className="grid grid-cols-2 gap-2.5 pt-2">
+                  {ATTRIBUTION_CARDS.map((card) => {
+                    const isSelected = attribution === card.id;
+                    return (
+                      <button
+                        key={card.id}
+                        type="button"
+                        onClick={() => {
+                          setAttribution(card.id);
+                          if (card.id !== "Other") setCustomAttribution("");
+                        }}
+                        className={`p-3 rounded-xl border text-center transition-all duration-300 font-semibold text-xs cursor-pointer ${
+                          isSelected 
+                            ? "border-[#C5E729] bg-[#117644]/20 text-[#C5E729] shadow-sm" 
+                            : "border-[#115e34]/40 bg-[#031d10]/40 text-stone-300 hover:border-[#117644]/80 hover:bg-[#031d10]/90"
+                        }`}
+                      >
+                        {card.label}
+                      </button>
+                    );
+                  })}
+                </div>
+
+                {/* Custom attribution entry */}
+                <AnimatePresence>
+                  {attribution === "Other" && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: "auto" }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="overflow-hidden pt-1"
+                    >
+                      <label className="block text-xs font-semibold text-stone-300 mb-2">
+                        Specify alternative referral source
+                      </label>
+                      <input 
+                        type="text"
+                        value={customAttribution}
+                        onChange={(e) => setCustomAttribution(e.target.value)}
+                        placeholder="e.g. Substack Newsletter, Conference"
+                        className="w-full bg-[#031d10]/90 border border-[#115e34]/50 rounded-lg px-4 py-3 text-white placeholder-stone-600 focus:outline-none focus:border-[#C5E729] focus:ring-1 focus:ring-[#C5E729]/30 transition-all text-sm font-sans"
+                      />
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="pt-4 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handlePrev}
+                    className="flex-1 bg-[#1e2521] text-stone-300 py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#28322c] cursor-pointer"
+                  >
+                    Back
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleNext}
+                    className="flex-[2] bg-[#117644] text-white py-3 rounded-lg text-sm font-semibold transition-all hover:bg-[#189b5a] shadow-md flex items-center justify-center gap-1.5 cursor-pointer"
+                  >
+                    Continue <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* STEP 8: FINAL COMPLETION SCREEN */}
+            {currentStep === 7 && (
+              <div className="space-y-6 text-center">
+                <motion.div 
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: [1, 1.15, 1], opacity: 1 }}
+                  transition={{ duration: 0.5, ease: "easeOut" }}
+                  className="mx-auto w-16 h-16 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center border border-emerald-500/20 shadow-sm"
+                >
+                  <CheckCircle2 className="w-10 h-10 animate-pulse" />
+                </motion.div>
+
+                <div className="space-y-2">
+                  <h1 className="text-3xl font-semibold text-white tracking-tight leading-tight">
+                    You&apos;re all set!
+                  </h1>
+                  <p className="text-xs text-[#C5E729] font-extrabold uppercase tracking-widest font-mono">
+                    Security profiles authorized
+                  </p>
+                  <p className="text-sm text-stone-400 font-medium leading-relaxed max-w-sm mx-auto">
+                    Welcome to Postrick, <strong className="text-white font-bold">{fullName || "Ahmed"}</strong>. Your brand campaign workspace <strong className="text-white font-bold">&ldquo;{businessName || "Savvy Monarch"}&rdquo;</strong> is ready for launch.
+                  </p>
+                </div>
+
+                {/* Interactive toggle option */}
+                <div className="p-4 rounded-xl border border-[#115e34]/50 bg-[#031d10]/90 flex items-center justify-between text-left max-w-sm mx-auto cursor-pointer transition-colors" onClick={() => setScheduleFirstCampaign(!scheduleFirstCampaign)}>
+                  <div className="space-y-0.5 pr-4 min-w-0">
+                    <span className="block text-xs font-bold text-white">
+                      Pre-populate sample campaign drafts
+                    </span>
+                    <span className="block text-[10px] text-stone-500 font-medium leading-normal">
+                      Populate active channels queues with pre-structured campaigns for immediate testing.
+                    </span>
+                  </div>
+                  <div className={`w-10 h-6.5 rounded-full p-1 transition-colors relative flex-shrink-0 cursor-pointer ${
+                    scheduleFirstCampaign ? "bg-[#117644]" : "bg-neutral-900"
+                  }`}>
+                    <motion.div 
+                      className="w-4.5 h-4.5 bg-white rounded-full shadow-md"
+                      animate={{ x: scheduleFirstCampaign ? 14 : 0 }}
+                      transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                    />
+                  </div>
+                </div>
+
+                <p className="text-[10px] text-stone-500 leading-normal font-medium max-w-sm mx-auto pt-2">
+                  Click &ldquo;Go to Dashboard&rdquo; below to unlock your active calendar queues, visual composer, and generative caption studios.
+                </p>
+
+                <div className="pt-6 flex flex-col gap-3">
+                  <button
+                    type="button"
+                    onClick={handleFinalize}
+                    className="w-full bg-[#C5E729] hover:bg-[#b0d022] text-[#02140b] py-3.5 rounded-lg text-sm font-bold shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer uppercase tracking-wider font-sans"
+                  >
+                    Go to Dashboard <ArrowRight className="w-4 h-4" />
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setCurrentStep(5); // Go back to the Discover Carousel step!
+                      setCarouselIndex(0);
+                    }}
+                    className="w-full bg-transparent hover:bg-white/5 text-stone-300 py-2.5 rounded-lg text-xs font-semibold transition-all cursor-pointer"
+                  >
+                    Take a Quick Tour
+                  </button>
+                </div>
+              </div>
+            )}
+          </motion.div>
+        </AnimatePresence>
+      </div>
     </div>
   );
 }

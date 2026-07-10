@@ -248,6 +248,35 @@ export default function PostrickAnalytics() {
 
   const activeTrendData = getTrendData();
 
+  // Pre-seeded 30-day daily engagement growth data helper
+  const getDailyEngagementGrowthData = () => {
+    const items = [];
+    const baseValue = 420;
+    for (let i = 29; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateString = date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      
+      const dayOfWeek = date.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const dayMultiplier = isWeekend ? 1.35 : 0.95;
+      const growthTrend = 1 + (29 - i) * 0.038; // ~3.8% compounding growth daily
+      const randomFluctuation = 0.88 + Math.sin(i * 0.6) * 0.12; 
+
+      const netGrowth = Math.round(baseValue * growthTrend * dayMultiplier * randomFluctuation);
+      const dailyIncrease = Math.max(12, Math.round(netGrowth * (0.05 + Math.random() * 0.08)));
+
+      items.push({
+        date: dateString,
+        growth: netGrowth,
+        dailyIncrease: dailyIncrease,
+      });
+    }
+    return items;
+  };
+
+  const engagementGrowthData = getDailyEngagementGrowthData();
+
   // Curated list of Top Content posts with rich images
   const TOP_PERFORMING_CONTENT = [
     {
@@ -692,6 +721,108 @@ export default function PostrickAnalytics() {
 
         <p className="text-[9px] text-neutral-400 font-mono text-center uppercase tracking-wider">
           💡 Clicking any platform block in the legend above instantly filters the active comparison trendline streams
+        </p>
+      </motion.div>
+
+      {/* SECTION 3.5 — DAILY ENGAGEMENT GROWTH OVER 30 DAYS (BAR CHART) */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.98 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.3, duration: 0.4 }}
+        className="bg-white border-2 border-[#eae3d2] p-5 md:p-6 rounded-3xl text-left space-y-4"
+      >
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-[#eae3d2]/70">
+          <div>
+            <span className="text-[9px] font-mono font-black text-[#117644] uppercase tracking-widest block">Engagement Growth Engine</span>
+            <h3 className="font-serif font-black text-sm text-[#042F1A] mt-0.5">30-Day Daily Engagement Growth Tracker</h3>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-[10px] font-mono font-black text-[#117644] bg-[#117644]/5 px-2.5 py-1 rounded-xl border border-[#117644]/15 flex items-center gap-1">
+              <TrendingUp className="w-3.5 h-3.5" />
+              <span>+28.4% TOTAL GROWTH</span>
+            </span>
+            <span className="text-[8.5px] font-mono text-neutral-400 uppercase">Bar chart metrics</span>
+          </div>
+        </div>
+
+        <div className="h-80 md:h-[300px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={engagementGrowthData} margin={{ left: -15, right: -15, top: 10 }}>
+              <defs>
+                <linearGradient id="growthGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#117644" stopOpacity={0.85} />
+                  <stop offset="100%" stopColor="#117644" stopOpacity={0.3} />
+                </linearGradient>
+                <linearGradient id="increaseGradient" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor="#C5E729" stopOpacity={0.9} />
+                  <stop offset="100%" stopColor="#C5E729" stopOpacity={0.4} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1efe6" />
+              <XAxis 
+                dataKey="date" 
+                tick={{ fontSize: 8, fontWeight: "600", fill: "#57534e" }}
+                interval={2} 
+              />
+              <YAxis 
+                tick={{ fontSize: 9, fontWeight: "600" }} 
+                label={{ value: 'Engagement Growth Count', angle: -90, position: 'insideLeft', style: { fontSize: '8px', fill: '#042F1A', fontWeight: '800' } }} 
+              />
+              <Tooltip
+                content={({ active, payload, label }) => {
+                  if (active && payload && payload.length) {
+                    return (
+                      <div className="bg-[#FAF5EB] border-2 border-[#117644] p-3 rounded-xl shadow-2xl space-y-1.5 text-left text-[11px] max-w-[220px]">
+                        <span className="block font-mono text-[9.5px] font-black text-[#117644] uppercase tracking-wider border-b pb-1 font-serif">{label}</span>
+                        <div className="space-y-1">
+                          <div className="flex justify-between items-center gap-4">
+                            <span className="font-semibold text-stone-600 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#117644]" />
+                              Cumulative Growth:
+                            </span>
+                            <span className="font-mono font-bold text-stone-900">{payload[0]?.value} pts</span>
+                          </div>
+                          <div className="flex justify-between items-center gap-4">
+                            <span className="font-semibold text-stone-600 flex items-center gap-1">
+                              <span className="w-1.5 h-1.5 rounded-full bg-[#C5E729]" />
+                              Daily Net Gain:
+                            </span>
+                            <span className="font-mono font-bold text-[#117644]">+{payload[1]?.value}</span>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return null;
+                }}
+              />
+              <Legend 
+                verticalAlign="bottom" 
+                height={36} 
+                iconType="circle"
+                wrapperStyle={{ fontSize: '9px', fontWeight: 'bold', fontFamily: 'monospace', textTransform: 'uppercase' }} 
+              />
+              <Bar 
+                dataKey="growth" 
+                name="Cumulative Engagement" 
+                fill="url(#growthGradient)" 
+                radius={[4, 4, 0, 0]} 
+                barSize={12} 
+              />
+              <Bar 
+                dataKey="dailyIncrease" 
+                name="Daily Net Gain" 
+                fill="url(#increaseGradient)" 
+                radius={[4, 4, 0, 0]} 
+                barSize={12} 
+              />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        <p className="text-[9px] text-neutral-400 font-mono text-center uppercase tracking-wider">
+          📈 Daily Net Gain highlights localized spikes (e.g. content releases and viral triggers) while Cumulative Engagement charts aggregate community depth
         </p>
       </motion.div>
 
