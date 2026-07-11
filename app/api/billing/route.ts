@@ -37,6 +37,18 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden: You cannot access billing data of another user." }, { status: 403 });
     }
 
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json({
+        subscription: {
+          plan_tier: "Free",
+          status: "active",
+          billing_cycle: "monthly",
+          current_period_end: null,
+          payments: []
+        }
+      });
+    }
+
     const supabase = getSupabaseAdminClient();
     const { data: sub, error } = await supabase
       .from("subscriptions")
@@ -87,6 +99,26 @@ export async function POST(req: NextRequest) {
     // Secure BOLA check
     if (userId !== user.userId) {
       return NextResponse.json({ error: "Forbidden: You cannot modify billing data of another user." }, { status: 403 });
+    }
+
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      const billingEnd = new Date();
+      billingEnd.setMonth(billingEnd.getMonth() + (billingCycle === "yearly" ? 12 : 1));
+
+      return NextResponse.json({
+        success: true,
+        message: `Plan upgraded successfully to ${planTier}! (Simulated local mode)`,
+        stripeSessionUrl: null,
+        subscription: {
+          id: `sim-sub-${Date.now()}`,
+          user_id: userId,
+          plan_tier: planTier,
+          status: "active",
+          billing_cycle: billingCycle,
+          current_period_start: new Date().toISOString(),
+          current_period_end: billingEnd.toISOString()
+        }
+      });
     }
 
     const supabase = getSupabaseAdminClient();

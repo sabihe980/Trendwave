@@ -746,6 +746,7 @@ export default function PostrickAnalytics() {
           </div>
         </div>
 
+        {/* RECHARTS BAR CHART */}
         <div className="h-80 md:h-[300px]">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={engagementGrowthData} margin={{ left: -15, right: -15, top: 10 }}>

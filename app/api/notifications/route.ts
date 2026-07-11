@@ -13,6 +13,10 @@ export const dynamic = "force-dynamic";
  */
 export async function GET(req: NextRequest) {
   try {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json({ notifications: getMockNotifications() });
+    }
+
     const supabase = getSupabaseClient();
     const token = req.cookies.get("sb-access-token")?.value;
 
@@ -53,6 +57,20 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields: userId, title, message." }, { status: 400 });
     }
 
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json({
+        notification: {
+          id: `sim-n-${Date.now()}`,
+          user_id: userId,
+          title,
+          message,
+          type: type || "general",
+          is_read: false,
+          created_at: new Date().toISOString()
+        }
+      });
+    }
+
     const supabase = getSupabaseAdminClient();
     const { data: notification, error } = await supabase
       .from("notifications")
@@ -88,6 +106,16 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: "Missing notificationId" }, { status: 400 });
     }
 
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json({
+        notification: {
+          id: notificationId,
+          is_read: isRead ?? true,
+          updated_at: new Date().toISOString()
+        }
+      });
+    }
+
     const supabase = getSupabaseAdminClient();
     const { data: notification, error } = await supabase
       .from("notifications")
@@ -118,6 +146,10 @@ export async function DELETE(req: NextRequest) {
       return NextResponse.json({ error: "Missing notification id." }, { status: 400 });
     }
 
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json({ message: "Notification deleted successfully." });
+    }
+
     const supabase = getSupabaseAdminClient();
     const { error } = await supabase.from("notifications").delete().eq("id", id);
 
@@ -129,4 +161,25 @@ export async function DELETE(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+function getMockNotifications() {
+  return [
+    {
+      id: "n-1",
+      title: "🌱 Welcome to Postrick AI!",
+      message: "Start building your social media calendar using Gemini-powered captions and images.",
+      type: "general",
+      is_read: false,
+      created_at: new Date().toISOString()
+    },
+    {
+      id: "n-2",
+      title: "📈 Engagement Peak Reached",
+      message: "Your connected channels saw an average 12.4% engagement increase yesterday!",
+      type: "alert",
+      is_read: true,
+      created_at: new Date(Date.now() - 24 * 3600000).toISOString()
+    }
+  ];
 }

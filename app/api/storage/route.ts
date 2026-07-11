@@ -50,20 +50,18 @@ export async function POST(req: NextRequest) {
     const cleanFileName = file.name.replace(/[^a-zA-Z0-9.-]/g, "_");
     const storagePath = `${finalUserId}/${uniqueId}_${cleanFileName}`;
 
-    const supabase = getSupabaseAdminClient();
-
-    // In production, we upload directly into Supabase Storage buckets:
-    // const { data, error } = await supabase.storage.from(bucket).upload(storagePath, buffer, {
-    //   contentType: file.type,
-    //   upsert: true
-    // });
-    
-    // We construct the public URL representing the uploaded file
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://your-project.supabase.co";
-    const publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+    let publicUrl = "";
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      const base64 = buffer.toString("base64");
+      publicUrl = `data:${file.type};base64,${base64}`;
+    } else {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://your-project.supabase.co";
+      publicUrl = `${supabaseUrl}/storage/v1/object/public/${bucket}/${storagePath}`;
+    }
 
     // 3. Log details in activity audits
-    if (finalUserId) {
+    if (finalUserId && process.env.SUPABASE_URL) {
+      const supabase = getSupabaseAdminClient();
       await supabase.from("activity_logs").insert({
         user_id: finalUserId,
         action: "file_uploaded",

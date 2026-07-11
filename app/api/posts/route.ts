@@ -49,6 +49,10 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden: You do not own this workspace." }, { status: 403 });
     }
 
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json({ posts: getMockPosts(workspaceId) });
+    }
+
     const supabase = getSupabaseClient();
     let query = supabase
       .from("posts")
@@ -100,6 +104,24 @@ export async function POST(req: NextRequest) {
     const hasAccess = await verifyWorkspaceAccess(val.workspaceId, user.userId);
     if (!hasAccess) {
       return NextResponse.json({ error: "Forbidden: You do not own this workspace." }, { status: 403 });
+    }
+
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json({
+        message: "Post compiled successfully! (Simulated local mode)",
+        post: {
+          id: val.id || `sim-${Date.now()}`,
+          workspace_id: val.workspaceId,
+          user_id: val.userId,
+          content: val.content,
+          title: val.title || "New Campaign Post",
+          status: val.status,
+          target_platforms: val.targetPlatforms,
+          created_at: new Date().toISOString(),
+          post_media: val.mediaUrls?.map((url, i) => ({ id: `m-${i}`, file_url: url, media_preset: "image" })) || [],
+          scheduled_posts: val.status === "scheduled" && val.scheduledTime ? [{ id: "s-1", scheduled_at: val.scheduledTime, status: "scheduled" }] : []
+        }
+      });
     }
 
     const supabase = getSupabaseAdminClient(); // Use admin client to enable full transaction integrity across multiple tables
@@ -239,6 +261,10 @@ export async function DELETE(req: NextRequest) {
       }
     }
 
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json({ message: "Post deleted successfully from scheduled ledger. (Simulated local mode)" });
+    }
+
     const { error } = await supabase.from("posts").delete().eq("id", postId);
 
     if (error) {
@@ -258,4 +284,83 @@ export async function DELETE(req: NextRequest) {
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }
+}
+
+function getMockPosts(workspaceId: string) {
+  const now = new Date();
+  
+  const tomorrow = new Date();
+  tomorrow.setDate(now.getDate() + 1);
+  tomorrow.setHours(10, 0, 0, 0);
+
+  const dayAfter = new Date();
+  dayAfter.setDate(now.getDate() + 2);
+  dayAfter.setHours(14, 30, 0, 0);
+
+  const yesterday = new Date();
+  yesterday.setDate(now.getDate() - 1);
+  yesterday.setHours(9, 15, 0, 0);
+
+  return [
+    {
+      id: "22222222-2222-2222-2222-222222222221",
+      workspace_id: workspaceId,
+      user_id: "00000000-0000-0000-0000-000000000000",
+      title: "Conscious Tech Product Reveal",
+      content: "🌱 The future is conscious. We're incredibly excited to introduce our new range of conscious tech products featuring an incredible 30% packaging reduction! \n\nEvery design element has been customized for extreme durability and carbon balance.\n\n#Sustainability #DesignEvolution #ConsciousTech",
+      status: "scheduled",
+      target_platforms: ["instagram", "linkedin", "facebook"],
+      created_at: new Date(now.getTime() - 3 * 3600000).toISOString(),
+      post_media: [
+        {
+          id: "m1",
+          file_url: "https://images.unsplash.com/photo-1620641788421-7a1c342ea42e?auto=format&fit=crop&w=600&h=400&q=80",
+          media_preset: "image"
+        }
+      ],
+      scheduled_posts: [
+        {
+          id: "s1",
+          scheduled_at: tomorrow.toISOString(),
+          status: "scheduled"
+        }
+      ]
+    },
+    {
+      id: "22222222-2222-2222-2222-222222222222",
+      workspace_id: workspaceId,
+      user_id: "00000000-0000-0000-0000-000000000000",
+      title: "Minimal Living Aesthetics",
+      content: "conscious choice. less friction. more growth. 🌸 Crafted for clarity. Beautiful queues in 2 seconds. The future is simple. #minimalism #growth",
+      status: "draft",
+      target_platforms: ["instagram", "pinterest"],
+      created_at: new Date(now.getTime() - 12 * 3600000).toISOString(),
+      post_media: [
+        {
+          id: "m2",
+          file_url: "https://images.unsplash.com/photo-1542601906990-b4d3fb778b09?auto=format&fit=crop&w=600&h=400&q=80",
+          media_preset: "image"
+        }
+      ],
+      scheduled_posts: []
+    },
+    {
+      id: "22222222-2222-2222-2222-222222222223",
+      workspace_id: workspaceId,
+      user_id: "00000000-0000-0000-0000-000000000000",
+      title: "Workspace Efficiency Drive",
+      content: "Stop scrolling! 🛑 This is how successful creators build their queues in 2 minutes. Free trial link in bio! #growthhack #marketingtips #fyp #productivity",
+      status: "published",
+      target_platforms: ["tiktok", "youtube"],
+      created_at: new Date(now.getTime() - 24 * 3600000).toISOString(),
+      post_media: [],
+      scheduled_posts: [
+        {
+          id: "s3",
+          scheduled_at: yesterday.toISOString(),
+          status: "published"
+        }
+      ]
+    }
+  ];
 }

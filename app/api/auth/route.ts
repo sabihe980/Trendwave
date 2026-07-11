@@ -119,6 +119,32 @@ export async function POST(req: NextRequest) {
  */
 export async function GET(req: NextRequest) {
   try {
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      // Return a simulated mock profile & workspace to allow full functional previewing
+      return NextResponse.json({
+        authenticated: true,
+        user: {
+          id: "00000000-0000-0000-0000-000000000000",
+          email: "developer@postrick.internal",
+          user_metadata: {
+            full_name: "Postrick Developer",
+            avatar_url: "https://api.dicebear.com/7.x/initials/svg?seed=Postrick"
+          }
+        },
+        profile: {
+          id: "00000000-0000-0000-0000-000000000000",
+          current_workspace_id: "11111111-1111-1111-1111-111111111111",
+          workspaces: [
+            {
+              id: "11111111-1111-1111-1111-111111111111",
+              name: "Postrick Main Brand",
+              owner_id: "00000000-0000-0000-0000-000000000000"
+            }
+          ]
+        }
+      });
+    }
+
     const supabase = getSupabaseClient();
     const token = req.cookies.get("sb-access-token")?.value;
 

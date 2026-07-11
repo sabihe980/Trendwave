@@ -38,6 +38,11 @@ export async function GET(req: NextRequest) {
 
     // 1. Calculate historical date offset
     const daysOffset = period === "7d" ? 7 : period === "90d" ? 90 : 30;
+
+    if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
+      return NextResponse.json(generateMockAnalytics(daysOffset));
+    }
+
     const targetDate = new Date();
     targetDate.setDate(targetDate.getDate() - daysOffset);
     const targetIsoDate = targetDate.toISOString().substring(0, 10);

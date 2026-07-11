@@ -58,8 +58,8 @@ export function getAuthenticatedUser(req: NextRequest): AuthenticatedUser | null
     }
   }
 
-  // Support local developer testing in non-auth environments
-  if (process.env.NODE_ENV === "development" && !process.env.SUPABASE_URL) {
+  // Support local developer testing and preview environments when Supabase is not configured
+  if (!process.env.SUPABASE_URL || !process.env.SUPABASE_ANON_KEY) {
     return {
       userId: "00000000-0000-0000-0000-000000000000",
       email: "developer@postrick.internal",
