@@ -6045,6 +6045,9 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                               );
 
                               const dragHighlight = dragOverCell?.day === day.key && dragOverCell?.hour === hour;
+                              const draggedItem = draggedId 
+                                ? (scheduledSlots.find(s => s.id === draggedId) || draftPool.find(d => d.id === draggedId)) 
+                                : null;
 
                               return (
                                 <div
@@ -6069,7 +6072,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                   </div>
 
                                   {/* Best scheduling guidelines sparkles */}
-                                  {suggestedBest && cellItems.length === 0 && (
+                                  {suggestedBest && cellItems.length === 0 && !dragHighlight && (
                                     <div className="p-2.5 bg-amber-50/50 border border-dashed border-amber-300/60 rounded-[18px] flex items-center justify-center gap-1 text-[8.5px] text-amber-800 font-mono font-bold animate-pulse my-auto">
                                       <Sparkles className="w-3 h-3 text-amber-500 flex-shrink-0" />
                                       <span>Optimal Slot ({suggestedBest.platform})</span>
@@ -6077,7 +6080,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                   )}
 
                                   {/* Hover plus quick add trigger */}
-                                  {cellItems.length === 0 && (
+                                  {cellItems.length === 0 && !dragHighlight && (
                                     <button
                                       onClick={() => {
                                         setNewSlotDay(day.key);
@@ -6102,8 +6105,11 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                       {cellItems.length > 2 ? (
                                         <>
                                           {cellItems.slice(0, 2).map((item, idx) => (
-                                            <div
+                                            <motion.div
                                               key={item.id}
+                                              layout
+                                              layoutId={`card-${item.id}`}
+                                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                               draggable
                                               onDragStart={(e) => handleDragStart(e, item.id)}
                                               onClick={() => setSelectedCalendarPostId(item.id)}
@@ -6118,7 +6124,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                                 <span>Overlapping Stack</span>
                                                 <span className="font-mono bg-neutral-50 px-1 py-0.2 rounded font-bold uppercase">{item.platform}</span>
                                               </div>
-                                            </div>
+                                            </motion.div>
                                           ))}
                                           <div 
                                             onClick={() => {
@@ -6148,6 +6154,9 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                           return (
                                             <motion.div
                                               key={item.id}
+                                              layout
+                                              layoutId={`card-${item.id}`}
+                                              transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                               draggable
                                               onDragStart={(e: any) => handleDragStart(e, item.id)}
                                               onClick={() => setSelectedCalendarPostId(item.id)}
@@ -6281,6 +6290,40 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                         })
                                       )}
                                     </div>
+                                  )}
+
+                                  {/* Visual snap indicator preview */}
+                                  {dragHighlight && draggedItem && (
+                                    <motion.div
+                                      initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                                      animate={{ opacity: 0.8, scale: 1, y: 0 }}
+                                      exit={{ opacity: 0, scale: 0.95 }}
+                                      transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                      className="rounded-[26px] p-4 border-2 border-dashed border-[#117644] bg-[#117644]/5 flex flex-col gap-3 text-left w-full pointer-events-none mt-2 shadow-2xs z-10"
+                                      style={{ borderStyle: "dashed" }}
+                                    >
+                                      <div className="flex items-center justify-between gap-1.5">
+                                        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-white border border-[#117644]/20 shadow-3xs">
+                                          <RenderPlatformIcon platform={draggedItem.platform} className="w-4 h-4 text-[#117644]" />
+                                        </div>
+                                        <span className="text-[7.5px] uppercase tracking-wider bg-[#117644]/15 text-[#117644] px-2.5 py-1 rounded-full font-black animate-pulse flex items-center gap-1">
+                                          <span className="inline-block w-1 h-1 bg-[#117644] rounded-full animate-ping" />
+                                          Snapping Here
+                                        </span>
+                                      </div>
+                                      <div>
+                                        <h3 className="font-sans font-extrabold text-[12px] tracking-tight leading-snug text-[#042F1A] line-clamp-2 italic">
+                                          &ldquo;{draggedItem.text}&rdquo;
+                                        </h3>
+                                        <div className="flex items-center gap-1.5 mt-2 text-[9px] font-mono font-bold text-[#117644]">
+                                          <span>{hour} - {(() => {
+                                            const [h, m] = hour.split(":");
+                                            if (m === "00") return `${h}:30`;
+                                            return `${String(parseInt(h) + 1).padStart(2, "0")}:00`;
+                                          })()}</span>
+                                        </div>
+                                      </div>
+                                    </motion.div>
                                   )}
 
                                 </div>
@@ -7547,6 +7590,9 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                         const displayLabel = hourId % 12 === 0 ? `12 ${hourId >= 12 ? "PM" : "AM"}` : `${hourId % 12} ${hourId >= 12 ? "PM" : "AM"}`;
                         const isDragHover = dailyDragOverHour === hrString;
                         const isPrimaryHighlight = highlightedSlotHour === hrString;
+                        const dailyDraggedItem = dailyDraggedId 
+                          ? scheduledSlots.find(s => s.id === dailyDraggedId) 
+                          : null;
 
                         const hourlyPosts = scheduledSlots.filter(s => {
                           const sHourStr = s.hour;
@@ -7574,10 +7620,43 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
 
                             {/* Drop zone drop container */}
                             <div className="flex-1 p-4 relative flex flex-col gap-3 min-h-[105px]">
-                              {isDragHover && hourlyPosts.length === 0 && (
+                              {isDragHover && hourlyPosts.length === 0 && !dailyDraggedItem && (
                                 <div className="absolute inset-4 border border-dashed border-[#117644]/30 bg-white/40 rounded-xl flex items-center justify-center text-[9px] font-mono font-black text-[#117644] tracking-widest uppercase">
                                   Drop payload to move to {hrString}
                                 </div>
+                              )}
+
+                              {isDragHover && dailyDraggedItem && (
+                                <motion.div
+                                  initial={{ opacity: 0, scale: 0.95, y: 5 }}
+                                  animate={{ opacity: 0.6, scale: 1, y: 0 }}
+                                  exit={{ opacity: 0, scale: 0.95 }}
+                                  transition={{ type: "spring", stiffness: 350, damping: 25 }}
+                                  className="bg-white/40 border-2 border-dashed border-[#117644] rounded-2xl p-4 flex flex-col gap-2 relative pointer-events-none w-full shadow-3xs z-10 text-left"
+                                  style={{ borderStyle: "dashed" }}
+                                >
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <span className="p-1.5 bg-[#042F1A]/10 text-[#042F1A] rounded-lg flex items-center justify-center">
+                                        <RenderPlatformIcon platform={dailyDraggedItem.platform} className="w-3.5 h-3.5" />
+                                      </span>
+                                      <span className="text-[10px] uppercase font-mono font-black text-[#042F1A] tracking-wider">{dailyDraggedItem.platform} dispatch</span>
+                                    </div>
+                                    <span className="flex items-center gap-1.5 text-[8.5px] font-black uppercase px-2 py-0.5 rounded-full text-[#117644] bg-[#117644]/10 border border-[#117644]/25 border-dashed animate-pulse">
+                                      Snap to {hrString}
+                                    </span>
+                                  </div>
+                                  <div className="flex gap-3 items-start my-1 text-left">
+                                    {dailyDraggedItem.mediaUrl && (
+                                      <div className="relative w-16 h-16 rounded-xl overflow-hidden border border-[#eae3d2] flex-shrink-0 opacity-50">
+                                        <img src={dailyDraggedItem.mediaUrl} alt="" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                                      </div>
+                                    )}
+                                    <div className="flex-1 space-y-1">
+                                      <p className="text-xs font-serif leading-relaxed text-[#042F1A]/70 italic">&ldquo;{dailyDraggedItem.text}&rdquo;</p>
+                                    </div>
+                                  </div>
+                                </motion.div>
                               )}
 
                               {hourlyPosts.map(card => {
@@ -7585,7 +7664,9 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                 return (
                                   <motion.div
                                     key={card.id}
+                                    layout
                                     layoutId={`card-${card.id}`}
+                                    transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                     draggable
                                     onDragStart={(e: any) => {
                                       setDailyDraggedId(card.id);

@@ -1,8 +1,31 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import LandingPage from "@/components/landing-page";
-import DashboardPage from "@/components/dashboard-page";
+import dynamic from "next/dynamic";
+
+const LandingPage = dynamic(() => import("@/components/landing-page"), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen bg-[#FAF6EE] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#042F1A]" />
+        <p className="text-sm text-[#042F1A] font-medium font-sans">Loading Postrick...</p>
+      </div>
+    </div>
+  ),
+});
+
+const DashboardPage = dynamic(() => import("@/components/dashboard-page"), {
+  ssr: false,
+  loading: () => (
+    <div className="min-h-screen bg-[#FAF6EE] flex items-center justify-center">
+      <div className="flex flex-col items-center gap-3">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#042F1A]" />
+        <p className="text-sm text-[#042F1A] font-medium font-sans">Opening Dashboard...</p>
+      </div>
+    </div>
+  ),
+});
 
 export default function HomeClient() {
   const [isInApp, setIsInApp] = useState(false);

@@ -100,6 +100,12 @@ async function retryWithBackoff<T>(
 }
 
 export async function POST(req: NextRequest) {
+  let targetPlatforms: string[] = ["instagram"];
+  let tone = "Professional";
+  let audience = "";
+  let hasImage = false;
+  let refinement = "";
+
   try {
     const user = getAuthenticatedUser(req);
     if (!user) {
@@ -110,14 +116,19 @@ export async function POST(req: NextRequest) {
     const { 
       prompt, 
       platforms = ["instagram"], 
-      tone = "Professional", 
-      audience = "", 
-      hasImage = false,
-      refinement = "",
+      tone: reqTone = "Professional", 
+      audience: reqAudience = "", 
+      hasImage: reqHasImage = false,
+      refinement: reqRefinement = "",
       existingVariants = []
     } = body;
 
-    const targetPlatforms = platforms.length > 0 ? platforms : ["instagram"];
+    tone = reqTone;
+    audience = reqAudience;
+    hasImage = reqHasImage;
+    refinement = reqRefinement;
+    targetPlatforms = platforms.length > 0 ? platforms : ["instagram"];
+
     const key = process.env.GEMINI_API_KEY;
 
     // Fallback Mock Data generation if no Gemini API Key is present

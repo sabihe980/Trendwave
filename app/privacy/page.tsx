@@ -4,7 +4,7 @@ import PrivacyPolicyClient from "@/components/privacy-client";
 export const metadata: Metadata = {
   title: "Postrick Privacy Policy & Data Processing Standards",
   description: "Read Postrick's comprehensive privacy policy, details on user access controls, secure encryption measures, and multi-network OAuth compliance in accordance with CCPA/GDPR/UK-GDPR regulations.",
-  alternatives: {
+  alternates: {
     canonical: "https://postrick.io/privacy",
   },
   openGraph: {

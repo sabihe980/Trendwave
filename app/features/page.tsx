@@ -1,10 +1,10 @@
 import { Metadata } from "next";
-import FeaturesClient from "@/components/features-client";
+import FeaturesClientWrapper from "./features-client-wrapper";
 
 export const metadata: Metadata = {
   title: "Postrick Platform Features — Multi-Channel Auto-Sync, Scheduler & AI Caption Assist",
   description: "Explore Postrick's comprehensive social media cockpit: cross-channel sync, smart calendar scheduling, advanced AI copilot caption writer, asset generators, and unified marketing analytics.",
-  alternatives: {
+  alternates: {
     canonical: "https://postrick.io/features",
   },
   openGraph: {
@@ -81,7 +81,7 @@ export default function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbData) }}
       />
-      <FeaturesClient />
+      <FeaturesClientWrapper />
     </>
   );
 }

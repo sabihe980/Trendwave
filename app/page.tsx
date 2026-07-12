@@ -4,7 +4,7 @@ import HomeClient from "@/components/home-client";
 export const metadata: Metadata = {
   title: "Postrick — Enterprise Social Media Management & AI Assistant",
   description: "Cross-publish, schedule, and automate organic growth. Leverage AI content design assist, post calendars, analytics, and deep engagement tracking.",
-  alternatives: {
+  alternates: {
     canonical: "https://postrick.io",
   },
   openGraph: {
