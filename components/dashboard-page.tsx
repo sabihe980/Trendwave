@@ -6111,7 +6111,7 @@ export default function DashboardPage({ onExitApp, isDarkMode }: DashboardPagePr
                                               layoutId={`card-${item.id}`}
                                               transition={{ type: "spring", stiffness: 300, damping: 30 }}
                                               draggable
-                                              onDragStart={(e) => handleDragStart(e, item.id)}
+                                              onDragStart={(e: any) => handleDragStart(e, item.id)}
                                               onClick={() => setSelectedCalendarPostId(item.id)}
                                               style={{ 
                                                 transform: `translateY(${idx * 7}px) scale(${1 - idx * 0.05})`, 
